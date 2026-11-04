@@ -1,0 +1,95 @@
+# Typical shelf prices used as the app's estimate when your own receipts don't have an item yet.
+# Read from Walmart.com category pages on 2026-11-04 (online prices for Walmart's default store, not a specific Reno store).
+# Raley's and WinCo don't allow their sites to be read, so they aren't here; the app learns their prices from your receipts.
+# Format: catalog item | amount unit | price | product it came from
+=== Walmart | 2026-11-04
+chicken breast | 1 lb | 3.57 | Tyson boneless skinless chicken breasts, $3.57/lb
+chicken thigh | 1 lb | 3.92 | Freshness Guaranteed boneless skinless thighs, $3.92/lb
+chicken drumstick | 1 lb | 1.98 | Tyson drumsticks, $1.98/lb
+chicken wing | 1 lb | 2.95 | Tyson wing sections, $2.95/lb
+chicken | 1 lb | 1.46 | Tyson whole young chicken, $1.46/lb
+ground chicken | 1 lb | 3.92 | Perdue ground chicken 92/8, 1 lb
+ground beef | 1 lb | 6.93 | 80/20 ground beef chuck, 1 lb tray
+chuck roast | 1 lb | 8.27 | Choice Angus boneless chuck shoulder roast, $8.27/lb
+steak | 1 lb | 12.94 | Choice Angus top sirloin, $12.94/lb
+ribeye steak | 1 lb | 19.97 | Choice Angus ribeye, $19.97/lb
+pork chop | 1 lb | 3.97 | Bone-in center cut loin chops, $3.97/lb
+pork shoulder | 1 lb | 2.24 | Farmer John pork shoulder butt roast, $2.24/lb
+pork tenderloin | 1 lb | 3.57 | Farmer John pork tenderloin, $3.57/lb
+ground pork | 1.5 lb | 6.92 | Smithfield ground pork, 1.5 lb
+italian sausage | 19 oz | 3.47 | Marketside mild Italian sausage, 5 links
+bacon | 12 oz | 5.78 | Bar-S hardwood smoked bacon, 12 oz
+ham | 16 oz | 4.47 | Great Value cooked ham, 16 oz
+salmon | 1 lb | 10.64 | Marketside skinless Atlantic salmon fillet, $10.64/lb
+cod | 1 lb | 12.24 | Great Value wild caught cod fillets, 1 lb frozen
+tilapia | 1 lb | 6.28 | Great Value tilapia fillets, 1 lb frozen
+potato | 5 lb | 2.47 | Russet potatoes, 5 lb bag
+sweet potato | 3 lb | 2.88 | Sweet potatoes, 3 lb bag
+onion | 3 lb | 2.25 | Yellow onions, 3 lb bag
+carrot | 2 lb | 2.24 | Baby-cut carrots, 2 lb bag
+bell pepper | 1 | 1.38 | Red bell pepper, each
+green pepper | 1 | 0.75 | Green bell pepper, each
+tomato | 2 lb | 2.27 | Roma tomatoes, 2 lb bag
+broccoli | 1 lb | 2.37 | Broccoli crowns, $2.37/lb
+cauliflower | 1 head | 3.16 | White cauliflower, each
+zucchini | 1 | 0.68 | Zucchini, each
+cabbage | 1 head | 2.68 | Green cabbage, each
+bok choy | 1 bunch | 3.07 | Baby bok choy bundle
+green onion | 1 bunch | 1.10 | Green onions, 1 bunch
+mushroom | 8 oz | 2.32 | Sliced brown mushrooms, 8 oz
+romaine | 3 head | 3.63 | Romaine hearts, 3 count
+celery | 1 bunch | 2.87 | Celery hearts
+avocado | 1 | 0.65 | Hass avocado, each
+lime | 1 | 0.20 | Lime, each
+lemon | 1 | 0.44 | Lemons, 2 lb bag for $3.92 (about 9)
+banana | 1 | 0.20 | Banana, each
+apple | 1 | 0.74 | Red Delicious apple, each
+blueberry | 11 oz | 4.97 | Blueberries, 1 pint
+strawberry | 1 lb | 2.67 | Strawberries, 1 lb
+rice | 5 lb | 3.37 | Great Value long grain rice, 5 lb
+pasta | 16 oz | 1.24 | Great Value spaghetti or penne, 16 oz
+egg noodle | 16 oz | 1.78 | Great Value wide egg noodles, 16 oz
+lasagna | 12 oz | 1.62 | Great Value oven ready lasagna, 12 oz
+black bean | 1 can | 0.92 | Great Value black beans, 15 oz
+pinto bean | 1 can | 0.92 | Great Value pinto beans, 15.5 oz
+kidney bean | 1 can | 0.92 | Great Value dark red kidney beans, 15.5 oz
+chickpea | 1 can | 0.92 | Great Value garbanzo beans, 15.5 oz
+great northern bean | 1 can | 0.92 | Great Value great northern beans, 15.5 oz
+lentil | 1 lb | 1.92 | Great Value dry lentils, 1 lb
+diced tomato | 1 can | 0.96 | Great Value diced tomatoes, 14.5 oz
+crushed tomato | 28 oz | 1.57 | Great Value crushed tomatoes, 28 oz
+tomato sauce | 1 can | 0.96 | Great Value tomato sauce, 15 oz (8 pack $7.68)
+tomato paste | 6 oz | 0.92 | Great Value tomato paste, 6 oz
+chicken broth | 32 floz | 1.50 | Great Value chicken broth, 32 oz carton
+beef broth | 32 floz | 1.50 | Great Value beef broth, 32 oz carton
+vegetable broth | 32 floz | 1.50 | Great Value vegetable broth, 32 oz carton
+vegetable oil | 48 floz | 3.82 | Great Value vegetable oil, 48 fl oz
+olive oil | 17 floz | 5.57 | Great Value extra virgin olive oil, 17 fl oz
+vinegar | 32 floz | 1.76 | Great Value white vinegar, 32 fl oz
+paprika | 2.5 oz | 1.08 | Great Value paprika
+chili powder | 3 oz | 1.08 | Great Value chili powder
+cumin | 2.5 oz | 1.48 | Great Value ground cumin
+cayenne | 2.25 oz | 3.77 | Great Value cayenne pepper
+red pepper flake | 1.75 oz | 1.44 | Great Value crushed red pepper
+garlic powder | 3.4 oz | 1.08 | Great Value garlic powder
+onion powder | 3.25 oz | 1.08 | Great Value onion powder
+cinnamon | 2.5 oz | 1.27 | Great Value ground cinnamon
+egg | 12 | 1.67 | Great Value cage-free large eggs, 12 count
+milk | 1 gal | 3.82 | Great Value whole milk, gallon
+butter | 16 oz | 2.96 | Great Value salted butter, 4 sticks
+cheddar | 8 oz | 1.97 | Great Value medium cheddar, 8 oz
+jack cheese | 8 oz | 1.97 | Great Value colby jack, 8 oz
+mozzarella | 16 oz | 3.58 | Great Value mozzarella, 16 oz
+parmesan | 6 oz | 2.08 | Great Value shredded parmesan, 6 oz
+swiss cheese | 16 oz | 3.44 | Great Value sliced Swiss, 16 oz
+cream cheese | 8 oz | 1.56 | Great Value cream cheese, 8 oz
+sour cream | 8 oz | 1.37 | Great Value sour cream, 8 oz
+cottage cheese | 24 oz | 2.97 | Great Value small curd cottage cheese, 24 oz
+heavy cream | 16 floz | 2.96 | Great Value heavy whipping cream, 16 oz
+half and half | 16 floz | 1.78 | Great Value half and half, 16 oz
+tortilla | 10 | 1.98 | Great Value soft taco flour tortillas, 10 count
+corn tortilla | 30 | 1.98 | Great Value white corn tortillas, 30 count
+frozen pea | 32 oz | 2.48 | Great Value frozen sweet peas, 32 oz
+frozen broccoli | 16 oz | 0.94 | Great Value frozen cut broccoli, 16 oz
+frozen green bean | 16 oz | 0.98 | Great Value frozen cut green beans, 16 oz
+frozen corn | 16 oz | 0.98 | Great Value frozen corn, 16 oz

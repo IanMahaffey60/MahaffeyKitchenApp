@@ -1,0 +1,51 @@
+# Receipts loaded into the app on first run. Generated into js/seed.js by build-seed.js.
+# "=== date | store | tax", then one line per item: CODE | price | catalog item | amount unit | "not for meals" if it shouldn't count toward food costs
+=== 2026-11-03 | Trader Joe's | 1.65
+BIRTHDAY CARD | 0.99 | greeting card | 1 | not for meals
+EGGS LARGE CAGE FREE WHI | 2.99 | egg | 12
+EGGS LARGE CAGE FREE WHI | 2.99 | egg | 12
+MILK QUART WHOLE | 1.79 | milk | 1 qt
+MAPLE SYRUP GRADE A DRK | 15.99 | maple syrup | 32 floz
+MOON X DARK RED BLEND | 6.99 | wine | 750 ml | not for meals
+MOON X CAB SAUV | 6.99 | wine | 750 ml | not for meals
+DOMAINE DE ARGENTINE MAL | 4.99 | wine | 750 ml | not for meals
+YOGURT GREEK PLAIN 32 OZ | 5.49 | greek yogurt | 32 oz
+MEAL INSTANT RAMEN CUP C | 1.89 | instant ramen | 1
+BAMBA PEANUT SNACKS | 1.99 | peanut snack | 1
+MEAL INSTANT RAMEN CUP C | 1.89 | instant ramen | 1
+ORG CHICKEN BROTH LOW SO | 2.19 | chicken broth | 32 floz
+HEAVY CREAM PINT | 3.99 | heavy cream | 16 floz
+WHOLE CHICKEN | 11.46 | chicken | 4.6 lb
+COTTAGE CHEESE PINT WHOL | 2.99 | cottage cheese | 16 oz
+BUTTER IRISH KERRYGOLD U | 4.99 | butter | 8 oz
+BUTTER IRISH KERRYGOLD U | 4.99 | butter | 8 oz
+BUTTER IRISH KERRYGOLD U | 4.99 | butter | 8 oz
+HOL ORG PUMPKIN | 2.79 | pumpkin puree | 1 can
+HOL ORG PUMPKIN | 2.79 | pumpkin puree | 1 can
+HOL ORG PUMPKIN | 2.79 | pumpkin puree | 1 can
+HOL ORG PUMPKIN | 2.79 | pumpkin puree | 1 can
+ORG GREAT NORTHERN BEANS | 1.19 | great northern bean | 1 can
+MEAL INSTANT RAMEN CUP C | 1.89 | instant ramen | 1
+VANILLA ICE CREAM QT | 4.99 | ice cream | 1 qt
+MINT CHIP ICE CREAM | 4.99 | ice cream | 1 qt
+ONIONS SWEET JUMBO EACH | 0.99 | onion | 1
+BREAD SOURDOUGH SANDWICH | 3.69 | bread | 1
+FENNEL (SWEET ANISE) 20 | 3.49 | fennel | 1
+BLUEBERRIES ORG 11 OZ | 6.99 | blueberry | 11 oz
+R-HERB THYME ORGANIC 1 O | 1.99 | fresh thyme | 1 oz
+R-HERB THYME ORGANIC 1 O | 1.99 | fresh thyme | 1 oz
+ONIONS SWEET JUMBO EACH | 0.99 | onion | 1
+MUSHROOMS CRIMINI ORG 8 | 2.69 | mushroom | 8 oz
+TORTILLAS MINI SONORA ST | 1.99 | tortilla | 1 pkg
+CARROTS WHOLE ORG 1 LB | 0.99 | carrot | 1 lb
+PURE BOURBON ORG VANILLA | 9.99 | vanilla extract | 4 floz
+A-GARLIC EACH | 0.98 | garlic | 2 head
+ORG POWDERED SUGAR | 3.79 | powdered sugar | 1 lb
+JOE COFFEE DARK ROAST GR | 6.99 | coffee | 13 oz
+JOE COFFEE MEDIUM ROAST | 8.99 | coffee | 13 oz
+POUND PLUS MILK CHOC | 7.99 | chocolate | 17.6 oz
+POUND PLUS DARK CHOC BAR | 8.99 | chocolate | 17.6 oz
+GREENS KALE 10 OZ | 1.99 | kale | 10 oz
+BANANA EACH | 1.38 | banana | 6
+LEMON EACH | 0.49 | lemon | 1
+APPLE EACH PINK LADY | 2.76 | apple | 4
