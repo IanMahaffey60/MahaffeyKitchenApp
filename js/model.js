@@ -10,13 +10,19 @@
   const phrase = (s) => ' ' + String(s || '').toLowerCase().replace(/\(.*?\)/g, ' ').replace(/[^a-z\s]/g, ' ').split(/\s+/).filter(Boolean).map(sing).join(' ') + ' ';
 
   // Find the catalog entry an ingredient or receipt name refers to (longest catalog name contained in it).
+  // Looks at the first choice in "white wine or chicken broth" before the whole line, and also knows
+  // names of things already in the kitchen that aren't in the catalog.
+  const longestIn = (p) => {
+    let best = null;
+    const consider = (key) => { if (key && p.includes(' ' + key + ' ') && (!best || key.length > best.length)) best = key; };
+    for (const key of Object.keys(S.catalog)) consider(key);
+    for (const it of S.items) if (!it.leftoverOf && !S.catalog[it.key]) consider(it.key);
+    return best;
+  };
   K.matchKey = (name) => {
     if (!S) return K.normName(name);
-    const p = phrase(name);
-    let best = null;
-    for (const key of Object.keys(S.catalog)) {
-      if (p.includes(' ' + key + ' ') && (!best || key.length > best.length)) best = key;
-    }
+    const first = String(name || '').replace(/\(.*?\)/g, ' ').split(/,|;| or | and\/or /i)[0];
+    const best = longestIn(phrase(first)) || longestIn(phrase(name));
     if (best) return best;
     const n = K.normName(name);
     return n || String(name || '').toLowerCase().trim();
@@ -121,6 +127,49 @@
         need -= K.conv(it.qty, it.unit, ing.unit, c && c.density, c && c.each);
         S.items.splice(S.items.indexOf(it), 1);
       } else { it.qty = K.round(it.qty - inItemUnits, 3); need = 0; }
+    }
+  };
+
+  // What cooking a recipe takes out of the kitchen, one row per kitchen item, for the "We made this" check.
+  // take is in the row's unit (the unit the kitchen item is stored in); null means the app can't tell.
+  K.takeOutPlan = (r, scale) => {
+    const rows = {}, notStocked = [];
+    for (const ing of r.ingredients) {
+      const c = K.cat(ing.key);
+      const stock = K.stockOf(ing.key).sort((a, b) => a.expires.localeCompare(b.expires));
+      if (!stock.length) { if (!(c && c.staple) && ing.key !== 'water' && !notStocked.includes(ing.key)) notStocked.push(ing.key); continue; }
+      let row = rows[ing.key];
+      if (!row) {
+        const unit = stock[0].unit;
+        let have = 0;
+        for (const it of stock) { const q = K.conv(it.qty, it.unit, unit, c && c.density, c && c.each); if (q != null) have += q; }
+        row = rows[ing.key] = { key: ing.key, name: stock[0].name || ing.key, unit, have: K.round(have, 3), take: 0, unknown: false, uses: [] };
+      }
+      row.uses.push(ing.qty != null ? K.fmtAmount(ing.qty * scale, ing.unit) + ' ' + ing.name : ing.name);
+      if (ing.qty == null) { row.unknown = true; continue; }
+      const q = K.conv(ing.qty * scale, ing.unit, row.unit, c && c.density, c && c.each);
+      if (q == null) row.unknown = true; else row.take += q;
+    }
+    const out = Object.values(rows).map((row) => {
+      if (row.unknown && row.take === 0) row.take = null;
+      else row.take = K.round(Math.min(row.take, row.have), 3);
+      return row;
+    });
+    return { rows: out, notStocked };
+  };
+  // Take amounts out of the kitchen: earliest use-by first, removing items that run out.
+  K.takeOut = (key, amount, unit) => {
+    if (!(amount > 0)) return;
+    const c = K.cat(key);
+    let need = amount;
+    for (const it of K.stockOf(key).sort((a, b) => a.expires.localeCompare(b.expires))) {
+      if (need <= 1e-6) break;
+      const inItem = K.conv(need, unit, it.unit, c && c.density, c && c.each);
+      if (inItem == null) continue;
+      if (it.qty <= inItem + 1e-6) {
+        need -= K.conv(it.qty, it.unit, unit, c && c.density, c && c.each);
+        S.items.splice(S.items.indexOf(it), 1);
+      } else { it.qty = K.round(it.qty - inItem, 3); need = 0; }
     }
   };
 
@@ -268,6 +317,49 @@
       n++;
     }
     return n;
+  };
+
+  // ---------- reading a receipt ----------
+  // Turn parsed receipt lines into reviewable rows: recognize codes this store has used before (even when
+  // the photo misread a letter or two), guess the item, and catch prices that were probably misread.
+  K.lastPrice = (key, store) => {
+    let best = null;
+    for (const p of S.prices) if (p.key === key && p.store === store && (!best || p.date > best.date)) best = p;
+    return best ? best.price : null;
+  };
+  K.lastCodePrice = (codeKey, store) => {
+    let best = null;
+    for (const rc of S.receipts) {
+      if (rc.store !== store || (best && rc.date < best.date)) continue;
+      const l = rc.lines.find((x) => K.receiptCodeKey(x.code) === codeKey);
+      if (l) best = { date: rc.date, price: l.price };
+    }
+    return best ? best.price : null;
+  };
+  K.reviewReceiptLines = (lines, store) => {
+    const dict = S.shorthand[store] || {};
+    const codes = Object.keys(dict);
+    return lines.map((l) => {
+      let codeKey = l.codeKey, mapped = dict[codeKey], seenAs = null;
+      if (!mapped && codeKey.length >= 4) {
+        let best = null, bs = 0;
+        for (const c of codes) { const sc = K.similar(codeKey, c); if (sc > bs) { bs = sc; best = c; } }
+        if (best && bs >= 0.62) { seenAs = best; mapped = dict[best]; }
+      }
+      const guess = mapped || K.matchKey(l.code.toLowerCase());
+      const key = S.catalog[guess] ? guess : '';
+      const row = { code: seenAs || l.code, codeKey: seenAs || codeKey, read: seenAs ? l.code : null, price: l.price, name: key, known: !!mapped, check: !!l.unsure, fixedFrom: null,
+        forUs: !(S.catalog[guess] && ['Household'].includes(S.catalog[guess].cat)) };
+      if (key) {
+        const expect = mapped ? K.lastCodePrice(seenAs || codeKey, store) : null;
+        if (expect != null && Math.abs(expect - l.price) > 0.005) row.last = expect;
+        const typical = expect || K.lastPrice(key, store) || (S.catalog[key] && S.catalog[key].price);
+        if (expect != null && Math.abs(expect - l.price) > 0.005 && K.priceVariants(l.price).some((v) => Math.abs(v - expect) < 0.005)) {
+          row.fixedFrom = l.price; row.price = expect; row.check = false;
+        } else if (typical && (l.price > typical * 3 || l.price < typical * 0.3)) row.check = true;
+      }
+      return row;
+    });
   };
 
   // ---------- spending ----------

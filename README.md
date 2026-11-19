@@ -26,6 +26,8 @@ Everything is saved in the browser's storage on each device (IndexedDB). Nothing
 Double-clicking `index.html` won't save data reliably. Run a tiny local server from this folder instead, for example `python -m http.server 8000`, then open http://localhost:8000.
 
 ## Notes
-- Receipt photos are read on the device with Tesseract.js, which downloads the first time it's used. Typing or pasting receipt lines always works.
+- Recipe links: the app first asks the site itself, then (if Settings allows) free public reader services (AllOrigins, CodeTabs, Jina Reader) that fetch the page. Only the link is sent. It reads the recipe data that sites publish for search engines. When a site won't share, the "Copy for Kitchen" Safari bookmark (set up from Add a recipe) copies the recipe on the page itself, and the paste box reads it.
+- Receipt photos are read on the device with Tesseract.js, which downloads the first time it's used. Before reading, the app crops to the receipt and cleans up shadows; afterwards it matches codes the store has used before (even when a letter was misread), fixes prices that differ from last time by one commonly misread digit, flags prices that look off, and compares the lines with the receipt's printed total. Typing or pasting receipt lines always works.
+- "We made this" assumes the whole recipe was made (or what the page was changed to), and shows what will be taken out of the Kitchen list so amounts can be corrected before saving.
 - Cook mode keeps the screen on using the Screen Wake Lock API (iPadOS 16.4 and later; works best when opened from the Home Screen icon).
-- When you change files, bump `CACHE` in `sw.js` (for example `kitchen-v6`) so the iPad picks up the new version.
+- When you change files, bump `CACHE` in `sw.js` (for example `kitchen-v7`) so the iPad picks up the new version.

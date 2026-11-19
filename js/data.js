@@ -162,6 +162,16 @@
     ['frozen broccoli', 'Frozen', 'freezer', 240, 16, 'oz', 0.94, 90],
     ['frozen green bean', 'Frozen', 'freezer', 240, 16, 'oz', 0.98, 110],
     ['frozen corn', 'Frozen', 'freezer', 240, 16, 'oz', 0.98, 150],
+    // added so these don't get matched to the wrong thing (peanut butter isn't butter, evaporated milk isn't milk)
+    ['peanut butter', 'Pantry', 'pantry', 180, 16, 'oz', 2.98, 258],
+    ['evaporated milk', 'Pantry', 'pantry', 365, 12, 'floz', 1.48, 252],
+    ['sweetened condensed milk', 'Pantry', 'pantry', 365, 14, 'oz', 2.48, 306],
+    ['garlic salt', 'Pantry', 'pantry', 730, 3, 'oz', 1.48, null, true],
+    ['ground ginger', 'Pantry', 'pantry', 730, 1.5, 'oz', 2.48, null, true],
+    ['sesame oil', 'Pantry', 'pantry', 365, 5, 'floz', 3.48, null, true],
+    ['peanut', 'Snacks', 'pantry', 120, 16, 'oz', 3.48, 146],
+    ['english muffin', 'Bakery', 'pantry', 7, 6, '', 2.98],
+    ['sauerkraut', 'Pantry', 'fridge', 60, 32, 'oz', 3.48],
   ];
   // How to bridge units: density = grams per cup, each = grams in one counted unit ('' means one whole item).
   const BRIDGE = {
@@ -183,14 +193,14 @@
     'tortilla chip': { density: 30, each: { bag: 283 } }, bisquick: { density: 120 }, breadcrumb: { density: 108 },
     beer: { density: 240, each: { can: 355, bottle: 355 } }, mayo: { density: 220 }, 'lemon juice': { density: 240 }, 'heavy cream': { density: 240 },
     'half and half': { density: 240 }, milk: { density: 245 }, 'bbq sauce': { density: 290 }, 'enchilada sauce': { density: 245, each: { can: 283 } },
-    'corn tortilla': { each: { pkg: 30, bag: 30 } }, tortilla: { each: { pkg: 10 } }, 'chicken nugget': { each: { bag: 822, '': 822 } },
+    'corn tortilla': { each: { pkg: 30, bag: 30, '': 1 } }, tortilla: { each: { pkg: 10, '': 1 } }, 'chicken nugget': { each: { bag: 822, '': 822 } },
     'fresh thyme': { density: 40 }, 'instant ramen': { each: { pkg: 1, '': 1 } }, 'pumpkin puree': { density: 245, each: { can: 425 } }, 'great northern bean': { density: 170, each: { can: 250 } },
     'bok choy': { density: 70, each: { bunch: 300, '': 40 } }, cauliflower: { density: 100, each: { head: 600, '': 600 } }, zucchini: { density: 125, each: { '': 200 } },
     strawberry: { density: 150 }, 'pinto bean': { density: 170, each: { can: 250 } }, 'kidney bean': { density: 170, each: { can: 250 } }, chickpea: { density: 165, each: { can: 250 } },
     'crushed tomato': { density: 245, each: { can: 794 } }, 'tomato paste': { density: 260, each: { can: 170 } },
     'beef broth': { density: 240, each: { can: 411 } }, 'vegetable broth': { density: 240, each: { can: 411 } }, tilapia: { each: { '': 113 } },
     'chicken drumstick': { each: { '': 110 } }, 'pork tenderloin': { each: { '': 500 } },
-    'taco seasoning': { each: { '': 28, pkg: 28 } }, 'onion soup mix': { each: { '': 1, pkg: 1 } }, 'frozen pea': { density: 145 },
+    'taco seasoning': { each: { '': 28, pkg: 28 } }, 'evaporated milk': { each: { can: 354 } }, 'sweetened condensed milk': { each: { can: 397 } }, 'onion soup mix': { each: { '': 1, pkg: 1 } }, 'frozen pea': { density: 145 },
   };
   K.defaultCatalog = () => {
     const out = {};
@@ -198,6 +208,33 @@
       out[name] = { name, cat, loc, shelf, packQty, packUnit, price, density: density || null, staple: !!staple, ...(BRIDGE[name] || {}) };
     }
     return out;
+  };
+  // Bring a device's saved catalog up to date (new items, unit bridges), once per revision.
+  // Also gives kitchen items that were typed in by hand a catalog entry so recipes can find them.
+  K.CATALOG_REV = 2;
+  K.upgradeCatalog = (s) => {
+    let changed = false;
+    if ((s.catalogRev || 0) < K.CATALOG_REV) {
+      const def = K.defaultCatalog();
+      for (const [key, c] of Object.entries(def)) {
+        const cur = s.catalog[key];
+        if (!cur) { s.catalog[key] = c; continue; }
+        if (c.each) cur.each = Object.assign({}, c.each, cur.each || {});
+        if (c.density && !cur.density) cur.density = c.density;
+      }
+      s.catalogRev = K.CATALOG_REV;
+      changed = true;
+    }
+    for (const it of s.items) {
+      if (it.leftoverOf || s.catalog[it.key]) continue;
+      const key = K.matchKey(it.name || it.key);
+      if (s.catalog[key]) { it.key = key; changed = true; continue; }
+      const k = K.normName(it.name || it.key) || it.key;
+      s.catalog[k] = { name: k, cat: 'Other', loc: it.loc || 'pantry', shelf: 14, packQty: it.qty || 1, packUnit: it.unit || '', price: null, density: null, staple: false };
+      it.key = k;
+      changed = true;
+    }
+    return changed;
   };
   K.CATEGORIES = ['Produce', 'Meat & fish', 'Dairy & eggs', 'Bakery', 'Pantry', 'Frozen', 'Snacks', 'Drinks', 'Household', 'Other'];
   K.CUISINES = ['Mexican', 'Chinese', 'Italian', 'American', 'Indian', 'Japanese', 'Thai', 'German', 'Other'];
