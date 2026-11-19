@@ -225,7 +225,8 @@
     for (const [date, p] of Object.entries(S.plan)) {
       if (date < from || date > to || !p.dinner || p.dinner.type !== 'recipe') continue;
       const r = S.recipes.find((x) => x.id === p.dinner.recipeId);
-      if (r) out.push({ date, r, people: (p.dinner.servings || S.settings.household) + (p.dinner.extra || 0) });
+      // Planned dinners are made as written unless the plan says half or double
+      if (r) out.push({ date, r, people: r.servings * (p.dinner.scale || 1) });
     }
     return out.sort((a, b) => a.date.localeCompare(b.date));
   };
@@ -245,7 +246,7 @@
       const shared = (r) => r.ingredients.filter((g) => keys.has(g.key) && !(K.cat(g.key) || {}).staple).length;
       const best = S.recipes.map((r) => K.scoreRecipe(r, { date, shared, exclude: planned })).sort((a, b) => b.score - a.score)[0];
       if (!best || best.score < -50) continue;
-      p.dinner = { type: 'recipe', recipeId: best.r.id, servings: S.settings.household, extra: 0 };
+      p.dinner = { type: 'recipe', recipeId: best.r.id, scale: 1 };
       planned.add(best.r.id);
       filled++;
       const y = K.learnedYield(best.r) || best.r.servings;

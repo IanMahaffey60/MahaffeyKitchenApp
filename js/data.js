@@ -353,7 +353,7 @@
 
     // this week: a few dinners planned, the rest left for "Fill my week"
     const plan = {};
-    plan[K.addDays(today, 1)] = { dinner: { type: 'recipe', recipeId: byName['Chicken fried rice'].id, servings: 3, extra: 1 } };
+    plan[K.addDays(today, 1)] = { dinner: { type: 'recipe', recipeId: byName['Chicken fried rice'].id, scale: 1 } };
     plan[K.addDays(today, 2)] = { dinner: { type: 'leftovers' }, lunch: 'Leftover fried rice' };
     plan[K.addDays(today, 4)] = { dinner: { type: 'out' } };
 

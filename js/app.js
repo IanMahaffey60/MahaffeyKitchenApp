@@ -60,7 +60,13 @@
     if (h.startsWith('recipe-')) { ui.tab = 'recipe'; ui.recipeId = h.slice(7); }
     else ui.tab = TABS.some((t) => t[0] === h) ? h : 'tonight';
     if (ui.tab !== 'recipe' && ui.cookMode) setCookMode(false, true);
-    if (ui.tab === 'recipe' && ui.recipeId !== prevRecipe) { ui.here = -1; ui.got = new Set(); }
+    if (ui.tab === 'recipe' && ui.recipeId !== prevRecipe) {
+      ui.here = -1; ui.got = new Set();
+      // Recipes open as written. A planned dinner can hand over a different amount (half, double).
+      const r = S && S.recipes.find((x) => x.id === ui.recipeId);
+      ui.people = r ? Math.max(1, Math.round(r.servings * (ui.openScale || 1))) : ui.people;
+      ui.extra = 0; ui.scaleTouched = !!(ui.openScale && ui.openScale !== 1); ui.openScale = null;
+    }
     render();
     const v = document.getElementById('view'); if (v) v.scrollTop = 0;
   };
@@ -163,11 +169,11 @@
         const r = S.recipes.find((x) => x.id === d.recipeId);
         if (!r) dinner = '<button class="plan empty" data-act="pickDinner" data-date="' + date + '">+ Dinner</button>';
         else {
-          const people = (d.servings || hh) + (d.extra || 0);
+          const people = r.servings * (d.scale || 1);
           const c = K.recipeCost(r, people);
           weekCost += c.total;
           dinner = '<button class="plan' + ((r.tags || []).includes('celebration') ? ' cel' : '') + '" data-act="pickDinner" data-date="' + date + '">' + esc(r.name) +
-            '<small>' + (c.unknown === r.ingredients.length ? '' : K.money(c.perPerson) + ' a person<br>') + 'For ' + (d.servings || hh) + (d.extra ? ' + ' + d.extra + ' extra' : '') + '</small></button>';
+            '<small>' + (c.unknown === r.ingredients.length ? '' : K.money(c.perPerson) + ' a person<br>') + (d.scale && d.scale !== 1 ? (d.scale === 0.5 ? 'Half' : d.scale === 2 ? 'Double' : K.round(people, 1) + ' servings') + ' batch' : 'Makes ' + r.servings) + '</small></button>';
         }
       }
       return '<div class="card day' + (date === today ? ' today' : '') + '"><div><div class="dname">' + K.DOW[K.dow(date)] + '</div><div class="dnum">' + K.parseIso(date).getDate() + '</div></div>' +
@@ -259,8 +265,10 @@
       (ly && Math.abs(ly - r.servings) >= 0.5 ? ' · <b>makes about ' + ly + ' for you</b>' : '') + (since != null ? ' · last made ' + (since === 0 ? 'today' : since + ' days ago') : '') + '</div>' +
       '<div class="row" style="margin-top:6px">' + tagHtml(r) + (r.source ? ' <a class="small" href="' + esc(r.source) + '" target="_blank" rel="noopener">View original</a>' : '') + '</div></div>' +
       '<div class="cookbar' + (ui.cookMode ? ' on' : '') + '"><button class="switch' + (ui.cookMode ? ' on' : '') + '" data-act="cookMode" role="switch" aria-checked="' + ui.cookMode + '" aria-label="Cook mode"></button><div><b>Cook mode</b><div class="small">' + (ui.cookMode ? 'The screen stays on' : 'Keep the screen on while you cook') + '</div></div></div></div>';
-    html += '<div class="section"><div class="row" style="gap:18px"><div class="row"><span class="label">Eating</span><span class="stepper"><button data-act="people" data-n="-1" aria-label="Fewer people">−</button><b class="num">' + ui.people + '</b><button data-act="people" data-n="1" aria-label="More people">+</button></span></div>' +
-      '<div class="row"><span class="label">Extra for leftovers</span><div class="chips">' + [0, 1, 2, 3].map((n) => '<button class="chip' + (ui.extra === n ? ' on' : '') + '" data-act="extra" data-n="' + n + '">' + (n ? '+' + n : 'None') + '</button>').join('') + '</div></div>' +
+    const asWritten = made === r.servings;
+    html += '<div class="section"><div class="row" style="gap:18px"><div class="row"><span class="label">Making</span><span class="stepper"><button data-act="people" data-n="-1" aria-label="Fewer servings">−</button><b class="num">' + made + '</b><button data-act="people" data-n="1" aria-label="More servings">+</button></span><span class="small muted">servings</span></div>' +
+      '<div class="chips">' + [[1, 'As written'], [0.5, 'Half'], [2, 'Double']].map(([f, l]) => '<button class="chip' + (made === Math.max(1, Math.round(r.servings * f)) ? ' on' : '') + '" data-act="makeScale" data-n="' + f + '">' + l + '</button>').join('') + '</div>' +
+      (asWritten ? '' : '<span class="small muted">Amounts below are scaled from the recipe\'s ' + r.servings + ' servings</span>') +
       '<div class="price num">' + (c.unknown === r.ingredients.length ? '<span>Add a receipt to see costs</span>' : K.money(c.total) + ' total · ' + K.money(c.total / made) + ' <span>per serving' + (c.estShare > 0.5 ? ', estimated' : '') + '</span>') + '</div></div></div>';
     html += '<div class="rp-grid"><div class="card pad"><div class="between" style="align-items:center"><h2>Ingredients</h2><span class="small muted">for ' + made + '</span></div><div class="ingl">' + r.ingredients.map((g, i) => {
       const have = K.haveAmount(g, scale);
@@ -447,11 +455,10 @@
     const p = S.plan[date] || {};
     const cur = p.dinner || {};
     const ranked = S.recipes.map((r) => K.scoreRecipe(r, { date })).sort((a, b) => b.score - a.score);
-    ui.pick = { date, servings: cur.servings || hh, extra: cur.extra || 0 };
+    ui.pick = { date, scale: cur.scale || 1 };
     const html = sheetHead('Dinner on ' + K.fmtDate(date, { weekday: 'long', month: 'short', day: 'numeric' })) +
       '<div class="row"><button class="btn ghost" data-act="setDinner" data-type="leftovers">Leftovers night</button><button class="btn ghost" data-act="setDinner" data-type="out">Eating out</button>' + (p.dinner ? '<button class="btn danger" data-act="setDinner" data-type="clear">Clear</button>' : '') + '</div>' +
-      '<div class="row"><span class="label">Eating</span><div class="sv-row" id="pickServ">' + [1, 2, 3, 4, 5, 6, 8].map((n) => '<button class="' + (ui.pick.servings === n ? 'on' : '') + '" data-act="pickServ" data-n="' + n + '">' + n + '</button>').join('') + '</div></div>' +
-      '<div class="row"><span class="label">Extra for leftovers</span><div class="sv-row" id="pickExtra">' + [0, 1, 2, 3].map((n) => '<button class="' + (ui.pick.extra === n ? 'on' : '') + '" data-act="pickExtra" data-n="' + n + '">' + (n ? '+' + n : 'None') + '</button>').join('') + '</div></div>' +
+      '<div class="row"><span class="label">Make</span><div class="sv-row" id="pickServ">' + [[1, 'As written'], [0.5, 'Half'], [2, 'Double']].map(([n, l]) => '<button class="' + (ui.pick.scale === n ? 'on' : '') + '" data-act="pickScale" data-n="' + n + '">' + l + '</button>').join('') + '</div></div>' +
       '<input class="search" id="pickSearch" placeholder="Search recipes" data-change="pickSearch" autocomplete="off">' +
       '<div class="optlist" id="pickList">' + ranked.map((s) => '<button class="opt" data-act="setDinner" data-type="recipe" data-id="' + s.r.id + '" data-name="' + esc(s.r.name.toLowerCase()) + '"><span><b>' + esc(s.r.name) + '</b><br><small>' + esc(s.why) + '</small></span><small class="num">' + costLine(s.r, hh) + '</small></button>').join('') + '</div>';
     openSheet(html);
@@ -613,8 +620,9 @@
   function sheetFinish() {
     const r = S.recipes.find((x) => x.id === ui.recipeId);
     const shown = (ui.people + ui.extra) / r.servings;
+    const leftGuess = Math.max(0, Math.round(r.servings * (ui.scaleTouched ? shown : 1) - S.settings.household));
     // Most nights the whole recipe gets made. If the amounts on the page were changed, start from those instead.
-    ui.fin = { left: ui.extra || 0, rate: r.rating > 0 ? 1 : r.rating < 0 ? -1 : 0, scale: ui.scaleTouched ? shown : 1, shown };
+    ui.fin = { left: Math.min(6, leftGuess), rate: r.rating > 0 ? 1 : r.rating < 0 ? -1 : 0, scale: ui.scaleTouched ? shown : 1, shown };
     finPlan();
     openSheet(sheetHead('Nice. How did it go?', r.name) + finishBody());
   }
@@ -626,7 +634,7 @@
   const finScales = () => {
     const r = S.recipes.find((x) => x.id === ui.recipeId);
     const opts = [[1, 'The whole recipe (serves ' + r.servings + ')'], [0.5, 'Half'], [2, 'Double']];
-    if (Math.abs(ui.fin.shown - 1) > 0.01 && ![0.5, 2].some((x) => Math.abs(x - ui.fin.shown) < 0.01)) opts.splice(1, 0, [ui.fin.shown, 'As shown, for ' + (ui.people + ui.extra)]);
+    if (Math.abs(ui.fin.shown - 1) > 0.01 && ![0.5, 2].some((x) => Math.abs(x - ui.fin.shown) < 0.01)) opts.splice(1, 0, [ui.fin.shown, 'As shown, ' + (ui.people + ui.extra) + ' servings']);
     return opts;
   };
   const finRow = (row, i) => {
@@ -645,7 +653,7 @@
         : '<div class="small muted">None of this recipe\'s ingredients are in the Kitchen list, so nothing to take out.</div>') +
       (f.notStocked.length ? '<div class="small muted">Not in the Kitchen list, so nothing to take out: ' + esc(f.notStocked.join(', ')) + '.</div>' : '') +
       '<div class="label">How many servings are left over?</div><div class="sv-row">' +
-      [0, 1, 2, 3, 4, 6].map((n) => '<button class="' + (f.left === n ? 'on' : '') + '" data-act="finLeft" data-n="' + n + '">' + (n === 0 ? 'None' : n === 6 ? '5+' : n) + '</button>').join('') + '</div>' +
+      [0, 1, 2, 3, 4, 5, 6].map((n) => '<button class="' + (f.left === n ? 'on' : '') + '" data-act="finLeft" data-n="' + n + '">' + (n === 0 ? 'None' : n === 6 ? '6+' : n) + '</button>').join('') + '</div>' +
       '<div class="small muted">Leftovers go in the fridge with an eat-by date. This also teaches the app how much this recipe really makes.</div>' +
       '<div class="label">Make it again?</div><div class="sv-row">' + [[1, 'Yes'], [0, 'Maybe'], [-1, 'Not really']].map(([v, l]) => '<button class="' + (f.rate === v ? 'on' : '') + '" data-act="finRate" data-n="' + v + '">' + l + '</button>').join('') + '</div>' +
       '<div class="row"><button class="btn" data-act="finSave">Save and update the kitchen</button></div></div>';
@@ -876,11 +884,11 @@
     tab: (el) => go(el.dataset.id),
     close: () => closeSheet(),
     settings: () => sheetSettings(),
-    open: (el) => { ui.people = S.settings.household; ui.extra = 0; ui.scaleTouched = false; go('recipe-' + el.dataset.id); },
+    open: (el) => { if (el.dataset.id !== ui.recipeId || ui.tab !== 'recipe') ui.recipeId = null; go('recipe-' + el.dataset.id); },
     cook: async (el) => {
-      ui.people = S.settings.household;
       const pd = (S.plan[K.today()] || {}).dinner;
-      ui.extra = pd && pd.recipeId === el.dataset.id ? pd.extra || 0 : 0;
+      ui.openScale = pd && pd.recipeId === el.dataset.id ? pd.scale || 1 : 1;
+      ui.recipeId = null;
       go('recipe-' + el.dataset.id);
       await setCookMode(true, true);
       render();
@@ -937,13 +945,12 @@
     weekNav: (el) => { const n = +el.dataset.n; ui.weekStart = n ? K.addDays(ui.weekStart, n) : K.weekStart(K.today()); render(); },
     fillWeek: () => { const n = K.fillWeek(ui.weekStart); save(); render(); toast(n ? 'Filled ' + n + ' dinner' + (n > 1 ? 's' : '') + '. Tap any day to change it.' : 'Every dinner from today on is already planned'); },
     pickDinner: (el) => sheetPickDinner(el.dataset.date),
-    pickServ: (el) => { ui.pick.servings = +el.dataset.n; el.parentNode.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === el)); },
-    pickExtra: (el) => { ui.pick.extra = +el.dataset.n; el.parentNode.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === el)); },
+    pickScale: (el) => { ui.pick.scale = +el.dataset.n; el.parentNode.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === el)); },
     setDinner: (el) => {
       const p = K.dayPlan(ui.pick.date);
       const t = el.dataset.type;
       if (t === 'clear') delete p.dinner;
-      else if (t === 'recipe') p.dinner = { type: 'recipe', recipeId: el.dataset.id, servings: ui.pick.servings, extra: ui.pick.extra };
+      else if (t === 'recipe') p.dinner = { type: 'recipe', recipeId: el.dataset.id, scale: ui.pick.scale || 1 };
       else p.dinner = { type: t };
       save(); closeSheet(); render();
     },
@@ -1068,7 +1075,7 @@
       let r = S.recipes.find((x) => x.id === el.dataset.id);
       if (r) Object.assign(r, fields);
       else { r = { id: K.uid(), rating: 0, yields: [], cooked: [], created: K.today(), ...fields }; S.recipes.push(r); }
-      save(); closeSheet(); ui.people = S.settings.household; ui.extra = 0; go('recipe-' + r.id); toast('Recipe saved');
+      save(); closeSheet(); ui.recipeId = null; go('recipe-' + r.id); toast('Recipe saved');
     },
     delRecipe: () => {
       if (ui.confirm !== 'del-' + ui.recipeId) { ui.confirm = 'del-' + ui.recipeId; render(); return; }
@@ -1076,8 +1083,8 @@
       for (const p of Object.values(S.plan)) if (p.dinner && p.dinner.recipeId === ui.recipeId) delete p.dinner;
       ui.confirm = null; save(); go('recipes'); toast('Recipe deleted');
     },
-    people: (el) => { ui.people = K.clamp(ui.people + +el.dataset.n, 1, 20); ui.scaleTouched = true; render(); },
-    extra: (el) => { ui.extra = +el.dataset.n; ui.scaleTouched = true; render(); },
+    people: (el) => { ui.people = K.clamp(ui.people + +el.dataset.n, 1, 60); ui.scaleTouched = true; render(); },
+    makeScale: (el) => { const r = S.recipes.find((x) => x.id === ui.recipeId); ui.people = Math.max(1, Math.round(r.servings * +el.dataset.n)); ui.extra = 0; ui.scaleTouched = +el.dataset.n !== 1; render(); },
     cookMode: () => setCookMode(!ui.cookMode),
     got: (el) => { const i = +el.dataset.i; if (el.checked) ui.got.add(i); else ui.got.delete(i); el.closest('label').classList.toggle('got', el.checked); },
     here: (el, ev) => { if (ev.target.closest('.timer')) return; const i = +el.dataset.i; ui.here = ui.here === i ? -1 : i; document.querySelectorAll('ol.steps li').forEach((li, j) => { li.className = j === ui.here ? 'here' : j < ui.here ? 'past' : ''; }); },
@@ -1089,7 +1096,7 @@
       try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); audioCtx.resume(); } catch (e) { /* ignore */ }
       tickTimers();
     },
-    planIt: () => { const r = S.recipes.find((x) => x.id === ui.recipeId); let d = K.today(); for (let i = 0; i < 14; i++) { const p = S.plan[K.addDays(K.today(), i)]; if (!p || !p.dinner) { d = K.addDays(K.today(), i); break; } } ui.pick = { date: d, servings: ui.people, extra: ui.extra }; K.dayPlan(d).dinner = { type: 'recipe', recipeId: r.id, servings: ui.people, extra: ui.extra }; save(); toast('Planned for ' + K.fmtDate(d, { weekday: 'long' }) + '. Change it on This week.'); },
+    planIt: () => { const r = S.recipes.find((x) => x.id === ui.recipeId); let d = K.today(); for (let i = 0; i < 14; i++) { const p = S.plan[K.addDays(K.today(), i)]; if (!p || !p.dinner) { d = K.addDays(K.today(), i); break; } } const sc = K.round((ui.people + ui.extra) / r.servings, 3); K.dayPlan(d).dinner = { type: 'recipe', recipeId: r.id, scale: sc }; save(); toast('Planned for ' + K.fmtDate(d, { weekday: 'long' }) + '. Change it on This week.'); },
     finish: () => sheetFinish(),
     finLeft: (el) => { ui.fin.left = +el.dataset.n; rerenderFinish(); },
     finRate: (el) => { ui.fin.rate = +el.dataset.n; rerenderFinish(); },
@@ -1102,13 +1109,14 @@
       const cost = K.recipeCost(r, made).total;
       for (const row of ui.fin.rows) K.takeOut(row.key, Math.min(row.take || 0, row.have), row.unit);
       const left = ui.fin.left;
-      S.log.push({ id: K.uid(), date: K.today(), type: 'cooked', recipeId: r.id, servings: ui.people, leftovers: left, cost: K.round(cost) });
+      const ate = Math.max(1, Math.round(made - left));
+      S.log.push({ id: K.uid(), date: K.today(), type: 'cooked', recipeId: r.id, servings: ate, leftovers: left, cost: K.round(cost) });
       r.cooked = (r.cooked || []).concat(K.today());
-      r.yields = (r.yields || []).concat(K.round((ui.people + left) / scale, 1));
+      r.yields = (r.yields || []).concat(K.round((S.settings.household + left) / scale, 1));
       r.rating = ui.fin.rate;
       if (left > 0) S.items.push({ id: K.uid(), name: r.name + ' (leftovers)', key: 'leftover', qty: left, unit: 'serving', loc: 'fridge', expires: K.addDays(K.today(), 4), added: K.today(), leftoverOf: r.id });
       const tp = K.dayPlan(K.today());
-      if (!tp.dinner || tp.dinner.type !== 'recipe') tp.dinner = { type: 'recipe', recipeId: r.id, servings: ui.people, extra: ui.extra };
+      if (!tp.dinner || tp.dinner.type !== 'recipe') tp.dinner = { type: 'recipe', recipeId: r.id, scale };
       ui.timers = {};
       const taken = ui.fin.rows.filter((row) => row.take > 0).length;
       save(); closeSheet(); setCookMode(false, true); go('tonight');
