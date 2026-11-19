@@ -689,7 +689,7 @@
       if (l.manual) note = '<div class="small muted">Added by hand</div>';
       else if (l.known) note = '<div class="small muted">Recognized</div>';
       else note = '<div class="small warn">New code. What is it?</div>';
-      if (l.fixedFrom != null) note += '<div class="small muted">Photo said ' + K.money(l.fixedFrom) + '; fixed to last time\'s price</div>';
+      if (l.fixedFrom != null) note += '<div class="small muted">Photo said ' + K.money(l.fixedFrom) + '; fixed to ' + (l.sameAs ? 'match the same item on this receipt' : 'last time\'s price') + '</div>';
       else if (l.check) note += '<div class="small warn">Check this price' + (l.last != null ? ' (last time ' + K.money(l.last) + ')' : '') + '</div>';
       else if (l.last != null) note += '<div class="small muted">Last time ' + K.money(l.last) + '</div>';
       return '<div class="rline' + (l.known && !l.check ? '' : ' ask') + ((!l.forUs || rc.event) ? ' skip' : '') + '"><div class="nm">' + (l.manual ? '' : '<code>' + esc(l.code) + '</code>') + note + '</div>' +
@@ -741,7 +741,7 @@
     const url = URL.createObjectURL(file);
     try {
       const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
-      const k = Math.min(1, 3200 / Math.max(img.naturalWidth, img.naturalHeight));
+      const k = Math.min(1, 4000 / Math.max(img.naturalWidth, img.naturalHeight), Math.sqrt(16000000 / (img.naturalWidth * img.naturalHeight)));
       const c = document.createElement('canvas');
       c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
       const ctx = c.getContext('2d', { willReadFrequently: true });

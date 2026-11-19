@@ -340,7 +340,7 @@
   K.reviewReceiptLines = (lines, store) => {
     const dict = S.shorthand[store] || {};
     const codes = Object.keys(dict);
-    return lines.map((l) => {
+    const rows = lines.map((l) => {
       let codeKey = l.codeKey, mapped = dict[codeKey], seenAs = null;
       if (!mapped && codeKey.length >= 4) {
         let best = null, bs = 0;
@@ -361,6 +361,18 @@
       }
       return row;
     });
+    // The same code twice on one receipt is almost always the same price: if most copies agree, use theirs.
+    const groups = {};
+    for (const r of rows) if (r.codeKey) (groups[r.codeKey] = groups[r.codeKey] || []).push(r);
+    for (const g of Object.values(groups)) {
+      if (g.length < 3) continue;
+      const count = {};
+      for (const r of g) count[r.price.toFixed(2)] = (count[r.price.toFixed(2)] || 0) + 1;
+      const [top, n] = Object.entries(count).sort((a, b) => b[1] - a[1])[0];
+      if (n < 2 || n === g.length) continue;
+      for (const r of g) if (r.price.toFixed(2) !== top) { if (r.fixedFrom == null) r.fixedFrom = r.price; r.price = +top; r.check = false; r.sameAs = true; }
+    }
+    return rows;
   };
 
   // ---------- spending ----------
