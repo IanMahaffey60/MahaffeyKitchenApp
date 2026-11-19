@@ -284,6 +284,18 @@ table.t .r { text-align: right; }
 .rline input.f { padding: 8px 10px; font-size: 15px; }
 .rline .amt input { text-align: right; }
 .pick { display: inline-flex; gap: 4px; }
+.takelist { display: flex; flex-direction: column; }
+.takerow { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+.takerow.ask { background: var(--warn-soft); border-radius: 10px; padding: 9px 10px; border-bottom: 0; margin: 4px 0; }
+.takerow .amt { display: inline-flex; align-items: center; gap: 6px; }
+.takerow .amt input { width: 80px; text-align: right; padding: 8px 10px; font-size: 15px; }
+.small.warn, span.warn { color: var(--warn); }
+.small .have { font-size: 13px; }
+.rline .x { border: 0; background: none; color: var(--muted); font-size: 20px; padding: 4px 8px; }
+.rcthumb { max-height: 220px; max-width: 100%; border-radius: 8px; box-shadow: 0 0 0 1px var(--line); }
+.importbox { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+.importbox .field { flex: 1 1 260px; }
+.bmcode { font-family: var(--mono); font-size: 11.5px; word-break: break-all; max-height: 90px; overflow: auto; background: var(--chip); padding: 8px; border-radius: 8px; }
 .pick button { white-space: nowrap; border: 0; background: var(--panel); border-radius: 8px; padding: 6px 9px; font-size: 12.5px; font-weight: 700; box-shadow: 0 0 0 1px var(--line); }
 .pick button.on { background: var(--accent); color: var(--on-accent); box-shadow: none; }
 .parsed { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
@@ -302,6 +314,8 @@ table.t .r { text-align: right; }
   .tab { font-size: 11px; height: 50px; }
   h1 { font-size: 25px; }
   .rline { grid-template-columns: minmax(0, 1fr) 80px; }
+  .takerow { grid-template-columns: minmax(0, 1fr) auto; }
+  .takerow .pick { grid-column: 1 / -1; }
   .rline .nm { grid-column: 1 / -1; }
   .parsed { grid-template-columns: minmax(0, 1fr); }
   ol.steps li { font-size: 17px; }

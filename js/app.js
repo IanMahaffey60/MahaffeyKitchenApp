@@ -60,7 +60,13 @@
     if (h.startsWith('recipe-')) { ui.tab = 'recipe'; ui.recipeId = h.slice(7); }
     else ui.tab = TABS.some((t) => t[0] === h) ? h : 'tonight';
     if (ui.tab !== 'recipe' && ui.cookMode) setCookMode(false, true);
-    if (ui.tab === 'recipe' && ui.recipeId !== prevRecipe) { ui.here = -1; ui.got = new Set(); }
+    if (ui.tab === 'recipe' && ui.recipeId !== prevRecipe) {
+      ui.here = -1; ui.got = new Set();
+      // Recipes open as written. A planned dinner can hand over a different amount (half, double).
+      const r = S && S.recipes.find((x) => x.id === ui.recipeId);
+      ui.people = r ? Math.max(1, Math.round(r.servings * (ui.openScale || 1))) : ui.people;
+      ui.extra = 0; ui.scaleTouched = !!(ui.openScale && ui.openScale !== 1); ui.openScale = null;
+    }
     render();
     const v = document.getElementById('view'); if (v) v.scrollTop = 0;
   };
@@ -163,11 +169,11 @@
         const r = S.recipes.find((x) => x.id === d.recipeId);
         if (!r) dinner = '<button class="plan empty" data-act="pickDinner" data-date="' + date + '">+ Dinner</button>';
         else {
-          const people = (d.servings || hh) + (d.extra || 0);
+          const people = r.servings * (d.scale || 1);
           const c = K.recipeCost(r, people);
           weekCost += c.total;
           dinner = '<button class="plan' + ((r.tags || []).includes('celebration') ? ' cel' : '') + '" data-act="pickDinner" data-date="' + date + '">' + esc(r.name) +
-            '<small>' + (c.unknown === r.ingredients.length ? '' : K.money(c.perPerson) + ' a person<br>') + 'For ' + (d.servings || hh) + (d.extra ? ' + ' + d.extra + ' extra' : '') + '</small></button>';
+            '<small>' + (c.unknown === r.ingredients.length ? '' : K.money(c.perPerson) + ' a person<br>') + (d.scale && d.scale !== 1 ? (d.scale === 0.5 ? 'Half' : d.scale === 2 ? 'Double' : K.round(people, 1) + ' servings') + ' batch' : 'Makes ' + r.servings) + '</small></button>';
         }
       }
       return '<div class="card day' + (date === today ? ' today' : '') + '"><div><div class="dname">' + K.DOW[K.dow(date)] + '</div><div class="dnum">' + K.parseIso(date).getDate() + '</div></div>' +
@@ -259,8 +265,10 @@
       (ly && Math.abs(ly - r.servings) >= 0.5 ? ' · <b>makes about ' + ly + ' for you</b>' : '') + (since != null ? ' · last made ' + (since === 0 ? 'today' : since + ' days ago') : '') + '</div>' +
       '<div class="row" style="margin-top:6px">' + tagHtml(r) + (r.source ? ' <a class="small" href="' + esc(r.source) + '" target="_blank" rel="noopener">View original</a>' : '') + '</div></div>' +
       '<div class="cookbar' + (ui.cookMode ? ' on' : '') + '"><button class="switch' + (ui.cookMode ? ' on' : '') + '" data-act="cookMode" role="switch" aria-checked="' + ui.cookMode + '" aria-label="Cook mode"></button><div><b>Cook mode</b><div class="small">' + (ui.cookMode ? 'The screen stays on' : 'Keep the screen on while you cook') + '</div></div></div></div>';
-    html += '<div class="section"><div class="row" style="gap:18px"><div class="row"><span class="label">Eating</span><span class="stepper"><button data-act="people" data-n="-1" aria-label="Fewer people">−</button><b class="num">' + ui.people + '</b><button data-act="people" data-n="1" aria-label="More people">+</button></span></div>' +
-      '<div class="row"><span class="label">Extra for leftovers</span><div class="chips">' + [0, 1, 2, 3].map((n) => '<button class="chip' + (ui.extra === n ? ' on' : '') + '" data-act="extra" data-n="' + n + '">' + (n ? '+' + n : 'None') + '</button>').join('') + '</div></div>' +
+    const asWritten = made === r.servings;
+    html += '<div class="section"><div class="row" style="gap:18px"><div class="row"><span class="label">Making</span><span class="stepper"><button data-act="people" data-n="-1" aria-label="Fewer servings">−</button><b class="num">' + made + '</b><button data-act="people" data-n="1" aria-label="More servings">+</button></span><span class="small muted">servings</span></div>' +
+      '<div class="chips">' + [[1, 'As written'], [0.5, 'Half'], [2, 'Double']].map(([f, l]) => '<button class="chip' + (made === Math.max(1, Math.round(r.servings * f)) ? ' on' : '') + '" data-act="makeScale" data-n="' + f + '">' + l + '</button>').join('') + '</div>' +
+      (asWritten ? '' : '<span class="small muted">Amounts below are scaled from the recipe\'s ' + r.servings + ' servings</span>') +
       '<div class="price num">' + (c.unknown === r.ingredients.length ? '<span>Add a receipt to see costs</span>' : K.money(c.total) + ' total · ' + K.money(c.total / made) + ' <span>per serving' + (c.estShare > 0.5 ? ', estimated' : '') + '</span>') + '</div></div></div>';
     html += '<div class="rp-grid"><div class="card pad"><div class="between" style="align-items:center"><h2>Ingredients</h2><span class="small muted">for ' + made + '</span></div><div class="ingl">' + r.ingredients.map((g, i) => {
       const have = K.haveAmount(g, scale);
@@ -447,11 +455,10 @@
     const p = S.plan[date] || {};
     const cur = p.dinner || {};
     const ranked = S.recipes.map((r) => K.scoreRecipe(r, { date })).sort((a, b) => b.score - a.score);
-    ui.pick = { date, servings: cur.servings || hh, extra: cur.extra || 0 };
+    ui.pick = { date, scale: cur.scale || 1 };
     const html = sheetHead('Dinner on ' + K.fmtDate(date, { weekday: 'long', month: 'short', day: 'numeric' })) +
       '<div class="row"><button class="btn ghost" data-act="setDinner" data-type="leftovers">Leftovers night</button><button class="btn ghost" data-act="setDinner" data-type="out">Eating out</button>' + (p.dinner ? '<button class="btn danger" data-act="setDinner" data-type="clear">Clear</button>' : '') + '</div>' +
-      '<div class="row"><span class="label">Eating</span><div class="sv-row" id="pickServ">' + [1, 2, 3, 4, 5, 6, 8].map((n) => '<button class="' + (ui.pick.servings === n ? 'on' : '') + '" data-act="pickServ" data-n="' + n + '">' + n + '</button>').join('') + '</div></div>' +
-      '<div class="row"><span class="label">Extra for leftovers</span><div class="sv-row" id="pickExtra">' + [0, 1, 2, 3].map((n) => '<button class="' + (ui.pick.extra === n ? 'on' : '') + '" data-act="pickExtra" data-n="' + n + '">' + (n ? '+' + n : 'None') + '</button>').join('') + '</div></div>' +
+      '<div class="row"><span class="label">Make</span><div class="sv-row" id="pickServ">' + [[1, 'As written'], [0.5, 'Half'], [2, 'Double']].map(([n, l]) => '<button class="' + (ui.pick.scale === n ? 'on' : '') + '" data-act="pickScale" data-n="' + n + '">' + l + '</button>').join('') + '</div></div>' +
       '<input class="search" id="pickSearch" placeholder="Search recipes" data-change="pickSearch" autocomplete="off">' +
       '<div class="optlist" id="pickList">' + ranked.map((s) => '<button class="opt" data-act="setDinner" data-type="recipe" data-id="' + s.r.id + '" data-name="' + esc(s.r.name.toLowerCase()) + '"><span><b>' + esc(s.r.name) + '</b><br><small>' + esc(s.why) + '</small></span><small class="num">' + costLine(s.r, hh) + '</small></button>').join('') + '</div>';
     openSheet(html);
@@ -479,8 +486,10 @@
     const isNew = !r;
     r = r || { name: '', cuisine: 'Other', servings: S.settings.household, time: 30, tags: [], source: '', notes: '', ingredients: [], steps: [] };
     const ingText = r.ingredients.map((g) => g.raw || [K.fmtQty(g.qty), K.unitLabel(g.unit, g.qty), g.name].filter(Boolean).join(' ')).join('\n');
-    const html = sheetHead(isNew ? 'Add a recipe' : 'Edit recipe', isNew ? 'Paste a recipe from a website, a photo\'s text or a cookbook, or type it in' : '') +
-      (isNew ? '<label class="field"><span>Paste the whole recipe here</span><textarea class="f" id="pasteAll" placeholder="Select everything from the title down to the last step on the recipe page, copy, and paste it here. The ads and life story get left behind."></textarea></label><div class="row"><button class="btn ghost" data-act="parseRecipe">Read it</button><span class="small muted" id="parseNote"></span></div>' : '') +
+    const html = sheetHead(isNew ? 'Add a recipe' : 'Edit recipe', isNew ? 'Paste a link to a recipe page, or paste or type the recipe' : '') +
+      (isNew ? '<div class="importbox"><label class="field"><span>Recipe link</span><input class="f" id="rUrl" type="url" inputmode="url" autocomplete="off" placeholder="Paste the link to a recipe page"></label><button class="btn" data-act="fetchRecipe">Get the recipe</button></div><div class="small muted" id="fetchNote" aria-live="polite"></div>' +
+        '<label class="field"><span>Or paste the recipe text</span><textarea class="f" id="pasteAll" placeholder="On the recipe page, select from the title down to the last step (or use the Copy for Kitchen bookmark), copy, and paste here. Ads and life stories get left behind."></textarea></label><div class="row"><button class="btn ghost" data-act="parseRecipe">Read it</button><span class="small muted" id="parseNote"></span></div>' +
+        bookmarkHelp() : '') +
       '<div class="form-grid"><label class="field" style="grid-column:1/-1"><span>Name</span><input class="f" id="rName" value="' + esc(r.name) + '"></label>' +
       '<label class="field"><span>Cuisine</span><select class="f" id="rCuisine">' + K.CUISINES.map((c) => '<option' + (c === r.cuisine ? ' selected' : '') + '>' + c + '</option>').join('') + '</select></label>' +
       '<label class="field"><span>Serves</span><input class="f" id="rServ" type="number" min="1" inputmode="numeric" value="' + esc(r.servings) + '"></label>' +
@@ -494,16 +503,162 @@
     openSheet(html, { wide: true });
   }
 
+  // ---------- recipe from a link ----------
+  // A web page can't read other websites directly (browsers block it), so the app tries the site
+  // itself first, then free public "reader" services that fetch the page and pass it back.
+  // Only the recipe link is sent to them. Settings can turn this off.
+  const READERS = [
+    { name: 'the site', url: (u) => u, kind: 'html' },
+    { name: 'AllOrigins', url: (u) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u), kind: 'html', reader: true },
+    { name: 'CodeTabs', url: (u) => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(u), kind: 'html', reader: true },
+    { name: 'Jina Reader', url: (u) => 'https://r.jina.ai/' + u, kind: 'html', headers: { 'X-Return-Format': 'html' }, reader: true },
+    { name: 'Jina Reader', url: (u) => 'https://r.jina.ai/' + u, kind: 'text', reader: true },
+  ];
+  const fetchText = async (url, headers, ms) => {
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), ms);
+    try {
+      const res = await fetch(url, { headers: headers || {}, signal: ac.signal, credentials: 'omit', referrerPolicy: 'no-referrer' });
+      if (!res.ok) throw new Error('http ' + res.status);
+      return await res.text();
+    } finally { clearTimeout(t); }
+  };
+  const mdToText = (md) => md.replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/^\s*(?:[*+-]|#+)\s+/gm, '').replace(/[*_`]+/g, '');
+  async function recipeFromLink(url, onTry) {
+    const useReaders = S.settings.linkReader !== false;
+    for (const r of READERS) {
+      if (r.reader && !useReaders) continue;
+      onTry(r.name);
+      try {
+        const body = await fetchText(r.url(url), r.headers, r.reader ? 20000 : 8000);
+        let p = null;
+        if (r.kind === 'html') p = K.recipeFromHtml(body, url);
+        else { const t = K.parseRecipeText(mdToText(body)); if (t.ingredients.length >= 2) p = { ...t, source: url }; }
+        if (p && p.ingredients.length) return { p, via: r.name };
+      } catch (e) { /* try the next way */ }
+    }
+    return null;
+  }
+  function fillRecipeForm(p, extraText) {
+    const set = (id, v) => { const el = document.getElementById(id); if (el && v != null && v !== '') el.value = v; };
+    set('rName', p.name); set('rServ', p.servings); set('rTime', p.time); set('rSource', p.source);
+    set('rIng', p.ingredients.map((g) => g.raw).join('\n')); set('rSteps', p.steps.join('\n')); set('rNotes', p.notes);
+    const cu = K.CUISINES.find((c) => new RegExp('\\b' + c + '\\b', 'i').test((p.cuisine || '') + ' ' + p.name + ' ' + (extraText || '').slice(0, 400)));
+    if (cu) document.getElementById('rCuisine').value = cu;
+  }
+  async function fetchRecipe() {
+    const inp = document.getElementById('rUrl'), note = document.getElementById('fetchNote');
+    let url = (inp.value || '').trim();
+    const m = url.match(/https?:\/\/\S+/);
+    if (!m) { note.textContent = 'Paste a link that starts with https://'; return; }
+    url = m[0];
+    const btn = document.querySelector('[data-act="fetchRecipe"]');
+    btn.disabled = true;
+    note.textContent = 'Getting the recipe…';
+    const got = await recipeFromLink(url, (name) => { note.textContent = 'Getting the recipe' + (name === 'the site' ? '…' : ' (trying ' + name + ')…'); });
+    btn.disabled = false;
+    if (got) {
+      fillRecipeForm(got.p);
+      note.innerHTML = '<span class="have">Got it.</span> Found ' + got.p.ingredients.length + ' ingredients and ' + got.p.steps.length + ' steps. Check them below, then save.';
+    } else {
+      note.innerHTML = '<span class="warn">That site wouldn\'t share the recipe' + (S.settings.linkReader === false ? ' (public readers are off in Settings)' : '') + '.</span> Use the Copy for Kitchen bookmark below on the recipe page, or select the recipe text there, copy it, and paste it in the box below.';
+      const d = document.getElementById('bmHelp'); if (d) d.open = true;
+    }
+  }
+
+  // "Copy for Kitchen" bookmark: runs on the recipe page in Safari, so it works on every site.
+  // It copies the recipe as plain text for the paste box. It is written for old browsers on purpose.
+  function copyForKitchen() {
+    function find(o, d) {
+      if (!o || typeof o != 'object' || d > 6) return null;
+      if (Array.isArray(o)) { for (var i = 0; i < o.length; i++) { var a = find(o[i], d + 1); if (a) return a; } return null; }
+      var t = o['@type']; if (t == 'Recipe' || (Array.isArray(t) && t.indexOf('Recipe') >= 0)) return o;
+      var ks = ['@graph', 'mainEntity', 'mainEntityOfPage', 'itemListElement', 'item'];
+      for (var j = 0; j < ks.length; j++) { var b = find(o[ks[j]], d + 1); if (b) return b; }
+      return null;
+    }
+    var ENT = { amp: '&', quot: '"', apos: "'", nbsp: ' ', lt: '<', gt: '>', frac12: '\u00bd', frac14: '\u00bc', frac34: '\u00be', frac13: '\u2153', frac23: '\u2154', deg: '\u00b0', ndash: '-', mdash: '-', rsquo: "'", lsquo: "'", rdquo: '"', ldquo: '"', hellip: '...' };
+    function clean(s) {
+      return String(s == null ? '' : s).replace(/<[^>]+>/g, ' ')
+        .replace(/&#x([0-9a-f]+);/gi, function (m, h) { return String.fromCharCode(parseInt(h, 16)); })
+        .replace(/&#(\d+);/g, function (m, n) { return String.fromCharCode(+n); })
+        .replace(/&([a-z]+\d*);/gi, function (m, n) { return ENT.hasOwnProperty(n.toLowerCase()) ? ENT[n.toLowerCase()] : m; })
+        .replace(/\s+/g, ' ').trim();
+    }
+    function steps(x, out) {
+      if (!x) return;
+      if (typeof x == 'string') { x.split(/\n/).forEach(function (p) { p = clean(p); if (p) out.push(p); }); return; }
+      if (Array.isArray(x)) { x.forEach(function (y) { steps(y, out); }); return; }
+      if (x.itemListElement && !x.text) { steps(x.itemListElement, out); return; }
+      steps(x.text || x.name, out);
+    }
+    var r = null, ss = document.querySelectorAll('script[type="application/ld+json"]');
+    for (var i = 0; i < ss.length && !r; i++) { try { r = find(JSON.parse(ss[i].textContent), 0); } catch (e) { /* skip */ } }
+    var txt = '';
+    if (r && r.recipeIngredient) {
+      var st = []; steps(r.recipeInstructions, st);
+      var y = [].concat(r.recipeYield || [])[0];
+      var tt = String(r.totalTime || '').replace(/^P(T)?/, '').replace('H', ' hr ').replace('M', ' min').trim();
+      txt = [clean(r.name || document.title), y ? 'Serves ' + clean(y) : '', tt ? 'Total time: ' + tt : '', '', 'Ingredients'].concat([].concat(r.recipeIngredient).map(clean), ['', 'Instructions'], st, ['', location.href]).join('\n');
+    } else {
+      var sel = String(window.getSelection ? getSelection() : '');
+      if (sel.length > 40) txt = document.title + '\n' + sel + '\n\n' + location.href;
+    }
+    if (!txt) { alert('No recipe found on this page. Select the recipe text first, then tap the bookmark again.'); return; }
+    function done() { alert('Recipe copied. Open Kitchen, tap Add a recipe, and paste it in the big box.'); }
+    function fallback() { var t = document.createElement('textarea'); t.value = txt; document.body.appendChild(t); t.select(); var ok = false; try { ok = document.execCommand('copy'); } catch (e) { ok = false; } t.parentNode.removeChild(t); if (ok) done(); else prompt('Copy this text, then paste it in Kitchen:', txt); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, fallback); else fallback();
+  }
+  const bookmarkCode = () => 'javascript:' + encodeURIComponent('(' + copyForKitchen.toString().replace(/\s*\/\*[^*]*\*\/\s*/g, ' ') + ')()');
+  const bookmarkHelp = () => '<details id="bmHelp"><summary class="small">Site won\'t share its recipe? Set up the Copy for Kitchen bookmark (one time, works on every recipe site)</summary><div class="stack small" style="margin-top:8px">' +
+    '<ol style="margin:0;padding-left:20px;line-height:1.6"><li>In Safari, open any page, tap <b>Share</b>, then <b>Add Bookmark</b>. Name it <b>Copy for Kitchen</b> and save.</li>' +
+    '<li>Tap <b>Copy the bookmark code</b> below.</li>' +
+    '<li>In Safari, open <b>Bookmarks</b>, tap <b>Edit</b>, tap <b>Copy for Kitchen</b>, clear its address, paste, and tap Done.</li>' +
+    '<li>From now on: on a recipe page, open Bookmarks and tap <b>Copy for Kitchen</b>. Then come back here, tap Add a recipe, and paste into the box above.</li></ol>' +
+    '<div class="row"><button class="btn small" data-act="copyBookmark">Copy the bookmark code</button></div><div class="bmcode" id="bmCode">' + esc(bookmarkCode()) + '</div></div></details>';
+
   function sheetFinish() {
     const r = S.recipes.find((x) => x.id === ui.recipeId);
-    ui.fin = { left: ui.extra || 0, rate: r.rating > 0 ? 1 : r.rating < 0 ? -1 : 0 };
+    const shown = (ui.people + ui.extra) / r.servings;
+    const leftGuess = Math.max(0, Math.round(r.servings * (ui.scaleTouched ? shown : 1) - S.settings.household));
+    // Most nights the whole recipe gets made. If the amounts on the page were changed, start from those instead.
+    ui.fin = { left: Math.min(6, leftGuess), rate: r.rating > 0 ? 1 : r.rating < 0 ? -1 : 0, scale: ui.scaleTouched ? shown : 1, shown };
+    finPlan();
     openSheet(sheetHead('Nice. How did it go?', r.name) + finishBody());
   }
-  const finishBody = () => '<div id="finBody" class="stack"><div class="label">How many servings are left over?</div><div class="sv-row">' +
-    [0, 1, 2, 3, 4, 6].map((n) => '<button class="' + (ui.fin.left === n ? 'on' : '') + '" data-act="finLeft" data-n="' + n + '">' + (n === 0 ? 'None' : n === 6 ? '5+' : n) + '</button>').join('') + '</div>' +
-    '<div class="small muted">Leftovers go in the fridge with an eat-by date. This also teaches the app how much this recipe really makes.</div>' +
-    '<div class="label">Make it again?</div><div class="sv-row">' + [[1, 'Yes'], [0, 'Maybe'], [-1, 'Not really']].map(([v, l]) => '<button class="' + (ui.fin.rate === v ? 'on' : '') + '" data-act="finRate" data-n="' + v + '">' + l + '</button>').join('') + '</div>' +
-    '<div class="row"><button class="btn" data-act="finSave">Save and update the kitchen</button></div></div>';
+  function finPlan() {
+    const r = S.recipes.find((x) => x.id === ui.recipeId);
+    const p = K.takeOutPlan(r, ui.fin.scale);
+    ui.fin.rows = p.rows; ui.fin.notStocked = p.notStocked;
+  }
+  const finScales = () => {
+    const r = S.recipes.find((x) => x.id === ui.recipeId);
+    const opts = [[1, 'The whole recipe (serves ' + r.servings + ')'], [0.5, 'Half'], [2, 'Double']];
+    if (Math.abs(ui.fin.shown - 1) > 0.01 && ![0.5, 2].some((x) => Math.abs(x - ui.fin.shown) < 0.01)) opts.splice(1, 0, [ui.fin.shown, 'As shown, ' + (ui.people + ui.extra) + ' servings']);
+    return opts;
+  };
+  const finRow = (row, i) => {
+    const unitLbl = K.unitLabel(row.unit, 2) || 'of them';
+    return '<div class="takerow' + (row.take == null ? ' ask' : '') + '"><div class="nm"><b>' + esc(K.cap(row.name)) + '</b><div class="small muted">Recipe: ' + esc(row.uses.join(', ')) + ' · have ' + esc(K.fmtAmount(row.have, row.unit) || '0') + '</div>' +
+      (row.take == null ? '<div class="small" style="color:var(--warn)">The app can\'t work out this amount. How much did you use?</div>' : '') + '</div>' +
+      '<label class="amt"><span class="small muted">Take out</span><input class="f num" type="number" min="0" step="any" inputmode="decimal" id="fin-' + i + '" value="' + (row.take == null ? '' : K.round(row.take, 2)) + '" placeholder="0" data-change="finTake" data-i="' + i + '" aria-label="Amount of ' + esc(row.name) + ' used, in ' + esc(unitLbl) + '"><span class="small">' + esc(K.unitLabel(row.unit, 2)) + '</span></label>' +
+      '<span class="pick"><button data-act="finAll" data-i="' + i + '">All of it</button><button data-act="finNone" data-i="' + i + '">None</button></span></div>';
+  };
+  const finishBody = () => {
+    const f = ui.fin;
+    return '<div id="finBody" class="stack"><div class="label">How much did you make?</div><div class="sv-row">' +
+      finScales().map(([v, l]) => '<button class="' + (Math.abs(f.scale - v) < 0.01 ? 'on' : '') + '" data-act="finScale" data-n="' + v + '">' + esc(l) + '</button>').join('') + '</div>' +
+      '<div class="label">Taking out of the kitchen</div>' +
+      (f.rows.length ? '<div class="small muted">Change any amount that\'s off. Things that run out are removed.</div><div class="takelist">' + f.rows.map(finRow).join('') + '</div>'
+        : '<div class="small muted">None of this recipe\'s ingredients are in the Kitchen list, so nothing to take out.</div>') +
+      (f.notStocked.length ? '<div class="small muted">Not in the Kitchen list, so nothing to take out: ' + esc(f.notStocked.join(', ')) + '.</div>' : '') +
+      '<div class="label">How many servings are left over?</div><div class="sv-row">' +
+      [0, 1, 2, 3, 4, 5, 6].map((n) => '<button class="' + (f.left === n ? 'on' : '') + '" data-act="finLeft" data-n="' + n + '">' + (n === 0 ? 'None' : n === 6 ? '6+' : n) + '</button>').join('') + '</div>' +
+      '<div class="small muted">Leftovers go in the fridge with an eat-by date. This also teaches the app how much this recipe really makes.</div>' +
+      '<div class="label">Make it again?</div><div class="sv-row">' + [[1, 'Yes'], [0, 'Maybe'], [-1, 'Not really']].map(([v, l]) => '<button class="' + (f.rate === v ? 'on' : '') + '" data-act="finRate" data-n="' + v + '">' + l + '</button>').join('') + '</div>' +
+      '<div class="row"><button class="btn" data-act="finSave">Save and update the kitchen</button></div></div>';
+  };
+  const rerenderFinish = () => { const b = document.getElementById('finBody'); if (b) b.outerHTML = finishBody(); };
 
   function sheetLogOut() {
     openSheet(sheetHead('We ate out', 'Optional: what it cost, so the Costs tab can compare') +
@@ -513,7 +668,7 @@
 
   // ---------- receipt ----------
   function sheetReceipt() {
-    ui.receipt = ui.receipt || { store: S.settings.stores[0], date: K.today(), text: '', lines: [], event: false, status: '' };
+    ui.receipt = ui.receipt || { store: S.settings.stores[0], date: K.today(), text: '', lines: [], event: false, status: '', tax: null, total: null };
     openSheet(receiptHtml(), { wide: true });
   }
   function receiptHtml() {
@@ -521,32 +676,50 @@
     const forUs = K.sum(rc.lines.filter((l) => l.forUs && !rc.event), (l) => l.price);
     const other = K.sum(rc.lines.filter((l) => !l.forUs || rc.event), (l) => l.price);
     const known = rc.lines.filter((l) => l.known).length;
+    const checks = rc.lines.filter((l) => l.check).length;
+    const itemsSum = forUs + other, withTax = itemsSum + (rc.tax || 0);
+    let totalNote = '';
+    if (rc.total != null) {
+      const diff = K.round(rc.total - withTax);
+      totalNote = Math.abs(diff) < 0.01 ? '<span class="have">Matches the receipt total of ' + K.money(rc.total) + '</span>'
+        : '<span class="warn">These lines add up to ' + K.money(Math.abs(diff)) + (diff > 0 ? ' less' : ' more') + ' than the receipt total of ' + K.money(rc.total) + '. ' + (diff > 0 ? 'A line may be missing, or check' : 'Check') + ' the highlighted prices.</span>';
+    }
+    const lineHtml = (l, i) => {
+      let note;
+      if (l.manual) note = '<div class="small muted">Added by hand</div>';
+      else if (l.known) note = '<div class="small muted">Recognized</div>';
+      else note = '<div class="small warn">New code. What is it?</div>';
+      if (l.fixedFrom != null) note += '<div class="small muted">Photo said ' + K.money(l.fixedFrom) + '; fixed to ' + (l.sameAs ? 'match the same item on this receipt' : 'last time\'s price') + '</div>';
+      else if (l.check) note += '<div class="small warn">Check this price' + (l.last != null ? ' (last time ' + K.money(l.last) + ')' : '') + '</div>';
+      else if (l.last != null) note += '<div class="small muted">Last time ' + K.money(l.last) + '</div>';
+      return '<div class="rline' + (l.known && !l.check ? '' : ' ask') + ((!l.forUs || rc.event) ? ' skip' : '') + '"><div class="nm">' + (l.manual ? '' : '<code>' + esc(l.code) + '</code>') + note + '</div>' +
+        '<input class="f" id="rcN-' + i + '" list="catalogList" value="' + esc(l.name) + '" data-change="rcName" data-i="' + i + '" placeholder="e.g. spinach" aria-label="Item name for ' + esc(l.code || 'new line') + '">' +
+        '<span class="amt"><input class="f num" id="rcP-' + i + '" type="number" step="0.01" inputmode="decimal" value="' + l.price.toFixed(2) + '" data-change="rcPrice" data-i="' + i + '" aria-label="Price"></span>' +
+        '<span class="pick"><button class="' + (l.forUs ? 'on' : '') + '" data-act="rcFor" data-i="' + i + '" data-v="1">For us</button><button class="' + (!l.forUs ? 'on' : '') + '" data-act="rcFor" data-i="' + i + '" data-v="0">Not for meals</button><button class="x" data-act="rcDel" data-i="' + i + '" aria-label="Remove this line">×</button></span></div>';
+    };
     return sheetHead('Add a receipt', 'Codes you name once are remembered for that store') + catalogDatalist() +
       '<div class="form-grid"><label class="field"><span>Store</span><select class="f" id="rcStore" data-change="rcStore">' + S.settings.stores.map((s) => '<option' + (s === rc.store ? ' selected' : '') + '>' + esc(s) + '</option>').join('') + '</select></label>' +
       '<label class="field"><span>Date</span><input class="f" id="rcDate" type="date" value="' + esc(rc.date) + '" data-change="rcDate"></label>' +
-      '<label class="field"><span>Photo of the receipt</span><input class="f" id="rcPhoto" type="file" accept="image/*" capture="environment" data-change="rcPhoto"></label></div>' +
-      (rc.status ? '<div class="small" style="color:var(--ink2)" id="rcStatus">' + esc(rc.status) + '</div>' : '<div class="small muted" id="rcStatus">Take a photo to read it on this device, or type or paste the lines below.</div>') +
-      '<label class="field"><span>Receipt lines (item and price on each line)</span><textarea class="f" id="rcText" data-change="rcText" placeholder="ORG BABY SPINACH 2.99&#10;BNLS SKNLS CHKN THGH 6.49&#10;AVOCADOS BAG 3.99">' + esc(rc.text) + '</textarea></label>' +
-      '<div class="row"><button class="btn ghost" data-act="rcRead">Read the lines</button><label class="toggle"><button class="switch' + (rc.event ? ' on' : '') + '" data-act="rcEvent" role="switch" aria-checked="' + rc.event + '" aria-label="Whole receipt was for an event"></button>Whole receipt was for an event</label></div>' +
-      (rc.lines.length ? '<div><div class="between"><div class="label">' + rc.lines.length + ' items · ' + known + ' recognized</div></div>' + rc.lines.map((l, i) => '<div class="rline' + (l.known ? '' : ' ask') + ((!l.forUs || rc.event) ? ' skip' : '') + '"><div class="nm"><code>' + esc(l.code) + '</code>' + (l.known ? '<div class="small muted">Recognized</div>' : '<div class="small" style="color:var(--warn)">New code. What is it?</div>') + '</div>' +
-        '<input class="f" id="rcN-' + i + '" list="catalogList" value="' + esc(l.name) + '" data-change="rcName" data-i="' + i + '" placeholder="e.g. spinach" aria-label="Item name for ' + esc(l.code) + '">' +
-        '<span class="amt"><input class="f num" id="rcP-' + i + '" type="number" step="0.01" inputmode="decimal" value="' + l.price.toFixed(2) + '" data-change="rcPrice" data-i="' + i + '" aria-label="Price"></span>' +
-        '<span class="pick"><button class="' + (l.forUs ? 'on' : '') + '" data-act="rcFor" data-i="' + i + '" data-v="1">For us</button><button class="' + (!l.forUs ? 'on' : '') + '" data-act="rcFor" data-i="' + i + '" data-v="0">Not for meals</button></span></div>').join('') +
-        '<div class="between" style="margin-top:10px"><span class="num">For meals <b>' + K.money(forUs) + '</b> · Not for meals <b>' + K.money(other) + '</b> · Total <b>' + K.money(forUs + other) + '</b></span><button class="btn" data-act="rcSave">Add to the kitchen</button></div></div>' : '');
+      '<label class="field"><span>Photo of the receipt</span><input class="f" id="rcPhoto" type="file" accept="image/*" data-change="rcPhoto"></label></div>' +
+      (rc.status ? '<div class="small" style="color:var(--ink2)" id="rcStatus">' + esc(rc.status) + '</div>' : '<div class="small muted" id="rcStatus">For the best read: lay the receipt flat on a dark table, fill the frame with it, and avoid shadows. Long receipt? Take two photos, top half then bottom half. Or type or paste the lines below.</div>') +
+      (rc.thumb ? '<div class="row" style="align-items:flex-end"><img class="rcthumb" src="' + rc.thumb + '" alt="The part of the photo that was read">' + (rc.photo ? '<button class="btn small ghost" data-act="rcNoCrop">' + (rc.noCrop ? 'Read it with cropping again' : 'Cut off part of the receipt? Read the whole photo') + '</button>' : '') + '</div>' : '') +
+      '<details' + (rc.lines.length ? '' : ' open') + '><summary class="small">Receipt text' + (rc.lines.length ? ' (tap to see or fix what was read)' : '') + '</summary><label class="field"><span>Item and price on each line</span><textarea class="f" id="rcText" data-change="rcText" placeholder="ORG BABY SPINACH 2.99&#10;BNLS SKNLS CHKN THGH 6.49&#10;AVOCADOS BAG 3.99">' + esc(rc.text) + '</textarea></label>' +
+      '<div class="row"><button class="btn ghost" data-act="rcRead">Read the lines</button></div></details>' +
+      '<div class="row"><label class="toggle"><button class="switch' + (rc.event ? ' on' : '') + '" data-act="rcEvent" role="switch" aria-checked="' + rc.event + '" aria-label="Whole receipt was for an event"></button>Whole receipt was for an event</label></div>' +
+      (rc.lines.length ? '<div><div class="between"><div class="label">' + rc.lines.length + ' items · ' + known + ' recognized' + (checks ? ' · ' + checks + ' to check' : '') + '</div><button class="btn small ghost" data-act="rcAdd">Add a line</button></div>' + rc.lines.map(lineHtml).join('') +
+        '<div class="stack" style="margin-top:10px"><div class="row"><span class="num">Items <b>' + K.money(itemsSum) + '</b></span><label class="row small">Tax <input class="f num" style="width:90px;padding:6px 8px" type="number" step="0.01" inputmode="decimal" id="rcTax" value="' + (rc.tax != null ? rc.tax.toFixed(2) : '') + '" placeholder="0.00" data-change="rcTax"></label><span class="num">Total <b>' + K.money(withTax) + '</b></span></div>' +
+        (totalNote ? '<div class="small">' + totalNote + '</div>' : '') +
+        '<div class="between"><span class="num small">For meals <b>' + K.money(forUs) + '</b> · Not for meals <b>' + K.money(other) + '</b></span><button class="btn" data-act="rcSave">Add to the kitchen</button></div></div></div>' : '');
   }
   const rerenderReceipt = () => { const sh = document.querySelector('#scrim .sheet'); if (sh) { const st = sh.scrollTop; sh.innerHTML = receiptHtml(); sh.scrollTop = st; } };
   function readReceiptLines() {
     const rc = ui.receipt;
-    const dict = S.shorthand[rc.store] || {};
-    rc.lines = K.parseReceiptLines(rc.text).map((l) => {
-      const mapped = dict[l.codeKey];
-      const guess = mapped || K.matchKey(l.code.toLowerCase());
-      const known = !!mapped;
-      return { ...l, name: mapped || (S.catalog[guess] ? guess : ''), known, forUs: !(S.catalog[guess] && ['Household'].includes(S.catalog[guess].cat)) };
-    });
+    const p = K.parseReceiptText(rc.text);
+    rc.lines = K.reviewReceiptLines(p.lines, rc.store);
+    rc.total = p.total; if (p.tax != null) rc.tax = p.tax;
     rc.status = rc.lines.length ? '' : 'No lines with prices found. Each line needs an item and a price, like "ORG SPINACH 2.99".';
   }
-  let tessLoading = null;
+  let tessLoading = null, tessWorker = null;
   const loadTesseract = () => tessLoading || (tessLoading = new Promise((res, rej) => {
     if (window.Tesseract) return res(window.Tesseract);
     const s = document.createElement('script');
@@ -554,18 +727,58 @@
     s.onload = () => res(window.Tesseract); s.onerror = () => { tessLoading = null; rej(new Error('load')); };
     document.head.appendChild(s);
   }));
+  const getWorker = async () => {
+    if (tessWorker) return tessWorker;
+    const T = await loadTesseract();
+    const w = await T.createWorker('eng');
+    // One block of text, keep the gap between item and price, and treat the photo as a sharp scan
+    await w.setParameters({ tessedit_pageseg_mode: '6', preserve_interword_spaces: '1', user_defined_dpi: '300' });
+    tessWorker = w;
+    return w;
+  };
+  const nextFrame = () => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 30)));
+  async function photoPixels(file) {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+      const k = Math.min(1, 4000 / Math.max(img.naturalWidth, img.naturalHeight), Math.sqrt(16000000 / (img.naturalWidth * img.naturalHeight)));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+      const ctx = c.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+      return ctx.getImageData(0, 0, c.width, c.height);
+    } finally { URL.revokeObjectURL(url); }
+  }
+  function grayCanvas(g) {
+    const c = document.createElement('canvas'); c.width = g.width; c.height = g.height;
+    const ctx = c.getContext('2d'); const id = ctx.createImageData(g.width, g.height);
+    for (let i = 0; i < g.gray.length; i++) { const v = g.gray[i]; id.data[i * 4] = v; id.data[i * 4 + 1] = v; id.data[i * 4 + 2] = v; id.data[i * 4 + 3] = 255; }
+    ctx.putImageData(id, 0, 0);
+    return c;
+  }
   async function ocrPhoto(file) {
     const rc = ui.receipt;
-    rc.status = 'Reading the photo on this device. This can take 20 to 40 seconds the first time.';
+    rc.photo = file;
+    rc.status = 'Cleaning up the photo…';
     rerenderReceipt();
+    await nextFrame();
     try {
-      const T = await loadTesseract();
-      const res = await Promise.race([T.recognize(file, 'eng'), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 90000))]);
-      rc.text = (rc.text ? rc.text + '\n' : '') + res.data.text;
+      const px = await photoPixels(file);
+      const clean = K.cleanReceiptImage(px.data, px.width, px.height, 4, { crop: !rc.noCrop });
+      const canvas = grayCanvas(clean);
+      const t = document.createElement('canvas'); const k = 220 / canvas.height; t.width = Math.max(1, Math.round(canvas.width * k)); t.height = 220;
+      t.getContext('2d').drawImage(canvas, 0, 0, t.width, t.height);
+      rc.thumb = t.toDataURL('image/png');
+      rc.status = 'Reading the receipt on this device. The first time takes 20 to 40 seconds.';
+      rerenderReceipt();
+      const w = await Promise.race([getWorker(), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 60000))]);
+      const res = await Promise.race([w.recognize(canvas), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 90000))]);
+      rc.text = res.data.text.split('\n').map((l) => l.trimEnd()).filter((l) => l.trim()).join('\n');
       readReceiptLines();
-      rc.status = rc.lines.length ? 'Read ' + rc.lines.length + ' lines. Check the names and prices below.' : 'The photo was read but no prices were found. Try a flatter, brighter photo, or type the lines.';
+      const checks = rc.lines.filter((l) => l.check).length;
+      rc.status = rc.lines.length ? 'Read ' + rc.lines.length + ' items. ' + (checks ? checks + ' prices look off and are highlighted. ' : '') + 'Check them against the receipt, then add to the kitchen.' : 'The photo was read but no prices were found. Try again with the receipt flat and filling the photo, or type the lines.';
     } catch (e) {
-      rc.status = 'Couldn\'t read the photo here. Type or paste the lines below instead.';
+      rc.status = e && e.message === 'load' ? 'The photo reader needs internet the first time. Connect and try again, or type the lines below.' : 'Couldn\'t read the photo here. Type or paste the lines below instead.';
     }
     rerenderReceipt();
   }
@@ -575,10 +788,12 @@
     const lines = [];
     let added = 0;
     for (const l of rc.lines) {
+      if (!l.price && !(l.name || '').trim()) continue;
       const name = (l.name || '').trim().toLowerCase() || l.code.toLowerCase();
+      if (!name) continue;
       let key = K.matchKey(name);
       if (!S.catalog[key]) { key = name; S.catalog[key] = { name: key, cat: 'Other', loc: 'pantry', shelf: 14, packQty: 1, packUnit: '', price: l.price, density: null, staple: false }; }
-      if (l.name) dict[l.codeKey] = key;
+      if (l.name && l.codeKey) dict[l.codeKey] = key;
       const c = S.catalog[key];
       const forUs = l.forUs && !rc.event;
       lines.push({ code: l.code, name: key, key, price: l.price, forUs, cat: c.cat });
@@ -587,7 +802,7 @@
         if (c.cat !== 'Household') { K.addItem(key, c.packQty || 1, c.packUnit || '', { expires: K.addDays(rc.date, c.shelf || 7) }); added++; }
       }
     }
-    S.receipts.push({ id: K.uid(), date: rc.date, store: rc.store, event: rc.event, lines, total: K.round(K.sum(lines, (l) => l.price)) });
+    S.receipts.push({ id: K.uid(), date: rc.date, store: rc.store, event: rc.event, lines, tax: rc.tax || 0, total: K.round(K.sum(lines, (l) => l.price) + (rc.tax || 0)) });
     // tick matching grocery items
     for (const g of S.grocery) if (!g.done && lines.some((l) => l.forUs && l.key === g.key)) g.done = true;
     S.grocery = S.grocery.filter((g) => !(g.done && lines.some((l) => l.key === g.key)));
@@ -604,6 +819,8 @@
     const html = sheetHead('Settings') +
       '<div class="row"><span class="label">People in the household</span><span class="stepper"><button data-act="hh" data-n="-1" aria-label="Fewer">−</button><b class="num" id="hhVal">' + s.household + '</b><button data-act="hh" data-n="1" aria-label="More">+</button></span></div>' +
       '<div class="row"><span class="label">Appearance</span><div class="seg">' + [['system', 'Match device'], ['light', 'Light'], ['dark', 'Dark']].map(([k, l]) => '<button class="' + (s.theme === k ? 'on' : '') + '" data-act="theme" data-id="' + k + '">' + l + '</button>').join('') + '</div></div>' +
+      '<div class="row"><label class="toggle"><button class="switch' + (s.linkReader !== false ? ' on' : '') + '" data-act="linkReader" role="switch" aria-checked="' + (s.linkReader !== false) + '" aria-label="Use free public readers for recipe links"></button>Use free public readers for recipe links</label></div>' +
+      '<div class="small muted">Most recipe sites block apps from reading them directly. When this is on, the app asks a free public service (AllOrigins, CodeTabs or Jina Reader) to fetch the page. Only the recipe link is sent, nothing about your household. Turn it off and links only work on sites that allow it; the paste box and the Copy for Kitchen bookmark always work.</div>' +
       '<label class="field"><span>Stores you shop at (comma separated)</span><input class="f" id="stStores" value="' + esc(s.stores.join(', ')) + '" data-change="stores"></label>' +
       '<div class="card pad stack"><h3>Your data</h3><div class="small" style="color:var(--ink2)">Everything is saved on this device only. ' +
       (persisted === true ? 'The browser has agreed to keep it.' : persisted === false ? 'Ask the browser to keep it so it isn\'t cleared to free up space.' : '') + '</div>' +
@@ -667,11 +884,11 @@
     tab: (el) => go(el.dataset.id),
     close: () => closeSheet(),
     settings: () => sheetSettings(),
-    open: (el) => { ui.people = S.settings.household; ui.extra = 0; go('recipe-' + el.dataset.id); },
+    open: (el) => { if (el.dataset.id !== ui.recipeId || ui.tab !== 'recipe') ui.recipeId = null; go('recipe-' + el.dataset.id); },
     cook: async (el) => {
-      ui.people = S.settings.household;
       const pd = (S.plan[K.today()] || {}).dinner;
-      ui.extra = pd && pd.recipeId === el.dataset.id ? pd.extra || 0 : 0;
+      ui.openScale = pd && pd.recipeId === el.dataset.id ? pd.scale || 1 : 1;
+      ui.recipeId = null;
       go('recipe-' + el.dataset.id);
       await setCookMode(true, true);
       render();
@@ -728,13 +945,12 @@
     weekNav: (el) => { const n = +el.dataset.n; ui.weekStart = n ? K.addDays(ui.weekStart, n) : K.weekStart(K.today()); render(); },
     fillWeek: () => { const n = K.fillWeek(ui.weekStart); save(); render(); toast(n ? 'Filled ' + n + ' dinner' + (n > 1 ? 's' : '') + '. Tap any day to change it.' : 'Every dinner from today on is already planned'); },
     pickDinner: (el) => sheetPickDinner(el.dataset.date),
-    pickServ: (el) => { ui.pick.servings = +el.dataset.n; el.parentNode.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === el)); },
-    pickExtra: (el) => { ui.pick.extra = +el.dataset.n; el.parentNode.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === el)); },
+    pickScale: (el) => { ui.pick.scale = +el.dataset.n; el.parentNode.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === el)); },
     setDinner: (el) => {
       const p = K.dayPlan(ui.pick.date);
       const t = el.dataset.type;
       if (t === 'clear') delete p.dinner;
-      else if (t === 'recipe') p.dinner = { type: 'recipe', recipeId: el.dataset.id, servings: ui.pick.servings, extra: ui.pick.extra };
+      else if (t === 'recipe') p.dinner = { type: 'recipe', recipeId: el.dataset.id, scale: ui.pick.scale || 1 };
       else p.dinner = { type: t };
       save(); closeSheet(); render();
     },
@@ -781,15 +997,26 @@
       const name = document.getElementById('itName').value.trim().toLowerCase();
       if (!name) { toast('Give the item a name'); return; }
       const key = K.matchKey(name);
-      const finalKey = S.catalog[key] ? key : name;
-      K.addItem(finalKey, parseFloat(document.getElementById('itQty').value) || 1, document.getElementById('itUnit').value, { loc: document.getElementById('itLoc').value, expires: document.getElementById('itExp').value || undefined, name: S.catalog[key] ? key : name });
+      let finalKey = key;
+      if (!S.catalog[key]) {
+        // New kind of thing: remember it so recipes that use it can find it in the kitchen
+        finalKey = K.normName(name) || name;
+        if (!S.catalog[finalKey]) S.catalog[finalKey] = { name: finalKey, cat: 'Other', loc: document.getElementById('itLoc').value, shelf: 14, packQty: parseFloat(document.getElementById('itQty').value) || 1, packUnit: document.getElementById('itUnit').value, price: null, density: null, staple: false };
+        K.reindex();
+      }
+      K.addItem(finalKey, parseFloat(document.getElementById('itQty').value) || 1, document.getElementById('itUnit').value, { loc: document.getElementById('itLoc').value, expires: document.getElementById('itExp').value || undefined, name: finalKey });
       save(); closeSheet(); render(); toast('Added ' + name);
     },
     itemSave: (el) => {
       const it = S.items.find((i) => i.id === el.dataset.id);
       if (!it) return;
       const name = document.getElementById('itName').value.trim();
-      if (name && !it.leftoverOf) { it.name = name.toLowerCase(); it.key = S.catalog[K.matchKey(name)] ? K.matchKey(name) : it.name; }
+      if (name && !it.leftoverOf) {
+        it.name = name.toLowerCase();
+        const mk = K.matchKey(name);
+        if (S.catalog[mk]) it.key = mk;
+        else { it.key = K.normName(name) || it.name; if (!S.catalog[it.key]) S.catalog[it.key] = { name: it.key, cat: 'Other', loc: it.loc, shelf: 14, packQty: 1, packUnit: '', price: null, density: null, staple: false }; K.reindex(); }
+      }
       it.qty = parseFloat(document.getElementById('itQty').value) || 0;
       it.unit = document.getElementById('itUnit').value;
       it.loc = document.getElementById('itLoc').value;
@@ -809,6 +1036,9 @@
     receipt: () => sheetReceipt(),
     rcRead: () => { ui.receipt.text = document.getElementById('rcText').value; readReceiptLines(); rerenderReceipt(); },
     rcEvent: () => { ui.receipt.event = !ui.receipt.event; rerenderReceipt(); },
+    rcDel: (el) => { ui.receipt.lines.splice(+el.dataset.i, 1); rerenderReceipt(); },
+    rcAdd: () => { ui.receipt.lines.push({ code: '', codeKey: '', price: 0, name: '', known: false, manual: true, forUs: true }); rerenderReceipt(); const n = document.getElementById('rcN-' + (ui.receipt.lines.length - 1)); if (n) n.focus(); },
+    rcNoCrop: () => { ui.receipt.noCrop = !ui.receipt.noCrop; if (ui.receipt.photo) ocrPhoto(ui.receipt.photo); },
     rcFor: (el) => { ui.receipt.lines[+el.dataset.i].forUs = el.dataset.v === '1'; rerenderReceipt(); },
     rcSave: () => saveReceipt(),
 
@@ -819,14 +1049,18 @@
     addRecipe: () => sheetRecipeEditor(null),
     editRecipe: () => sheetRecipeEditor(S.recipes.find((r) => r.id === ui.recipeId)),
     parseRecipe: () => {
-      const p = K.parseRecipeText(document.getElementById('pasteAll').value);
-      const set = (id, v) => { if (v != null && v !== '') document.getElementById(id).value = v; };
-      set('rName', p.name); set('rServ', p.servings); set('rTime', p.time); set('rSource', p.source);
-      set('rIng', p.ingredients.map((g) => g.raw).join('\n')); set('rSteps', p.steps.join('\n')); set('rNotes', p.notes);
-      const cu = K.CUISINES.find((c) => new RegExp('\\b' + c + '\\b', 'i').test(p.name + ' ' + document.getElementById('pasteAll').value.slice(0, 400)));
-      if (cu) document.getElementById('rCuisine').value = cu;
+      const text = document.getElementById('pasteAll').value;
+      if (/^\s*https?:\/\/\S+\s*$/.test(text)) { document.getElementById('rUrl').value = text.trim(); document.getElementById('pasteAll').value = ''; fetchRecipe(); return; }
+      const p = K.parseRecipeText(text);
+      fillRecipeForm(p, text);
       document.getElementById('parseNote').textContent = 'Found ' + p.ingredients.length + ' ingredients and ' + p.steps.length + ' steps. Check them below, then save.';
     },
+    fetchRecipe: () => fetchRecipe(),
+    copyBookmark: async () => {
+      try { await navigator.clipboard.writeText(bookmarkCode()); toast('Copied. Now paste it as the bookmark\'s address in Safari.'); }
+      catch (e) { const el = document.getElementById('bmCode'); const r = document.createRange(); r.selectNodeContents(el); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); toast('Copy was blocked. The code is selected: tap Copy.'); }
+    },
+    linkReader: () => { S.settings.linkReader = S.settings.linkReader === false; save(); sheetSettings(); },
     saveRecipe: (el) => {
       const v = (id) => document.getElementById(id).value;
       const name = v('rName').trim();
@@ -841,7 +1075,7 @@
       let r = S.recipes.find((x) => x.id === el.dataset.id);
       if (r) Object.assign(r, fields);
       else { r = { id: K.uid(), rating: 0, yields: [], cooked: [], created: K.today(), ...fields }; S.recipes.push(r); }
-      save(); closeSheet(); ui.people = S.settings.household; ui.extra = 0; go('recipe-' + r.id); toast('Recipe saved');
+      save(); closeSheet(); ui.recipeId = null; go('recipe-' + r.id); toast('Recipe saved');
     },
     delRecipe: () => {
       if (ui.confirm !== 'del-' + ui.recipeId) { ui.confirm = 'del-' + ui.recipeId; render(); return; }
@@ -849,8 +1083,8 @@
       for (const p of Object.values(S.plan)) if (p.dinner && p.dinner.recipeId === ui.recipeId) delete p.dinner;
       ui.confirm = null; save(); go('recipes'); toast('Recipe deleted');
     },
-    people: (el) => { ui.people = K.clamp(ui.people + +el.dataset.n, 1, 20); render(); },
-    extra: (el) => { ui.extra = +el.dataset.n; render(); },
+    people: (el) => { ui.people = K.clamp(ui.people + +el.dataset.n, 1, 60); ui.scaleTouched = true; render(); },
+    makeScale: (el) => { const r = S.recipes.find((x) => x.id === ui.recipeId); ui.people = Math.max(1, Math.round(r.servings * +el.dataset.n)); ui.extra = 0; ui.scaleTouched = +el.dataset.n !== 1; render(); },
     cookMode: () => setCookMode(!ui.cookMode),
     got: (el) => { const i = +el.dataset.i; if (el.checked) ui.got.add(i); else ui.got.delete(i); el.closest('label').classList.toggle('got', el.checked); },
     here: (el, ev) => { if (ev.target.closest('.timer')) return; const i = +el.dataset.i; ui.here = ui.here === i ? -1 : i; document.querySelectorAll('ol.steps li').forEach((li, j) => { li.className = j === ui.here ? 'here' : j < ui.here ? 'past' : ''; }); },
@@ -862,26 +1096,31 @@
       try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); audioCtx.resume(); } catch (e) { /* ignore */ }
       tickTimers();
     },
-    planIt: () => { const r = S.recipes.find((x) => x.id === ui.recipeId); let d = K.today(); for (let i = 0; i < 14; i++) { const p = S.plan[K.addDays(K.today(), i)]; if (!p || !p.dinner) { d = K.addDays(K.today(), i); break; } } ui.pick = { date: d, servings: ui.people, extra: ui.extra }; K.dayPlan(d).dinner = { type: 'recipe', recipeId: r.id, servings: ui.people, extra: ui.extra }; save(); toast('Planned for ' + K.fmtDate(d, { weekday: 'long' }) + '. Change it on This week.'); },
+    planIt: () => { const r = S.recipes.find((x) => x.id === ui.recipeId); let d = K.today(); for (let i = 0; i < 14; i++) { const p = S.plan[K.addDays(K.today(), i)]; if (!p || !p.dinner) { d = K.addDays(K.today(), i); break; } } const sc = K.round((ui.people + ui.extra) / r.servings, 3); K.dayPlan(d).dinner = { type: 'recipe', recipeId: r.id, scale: sc }; save(); toast('Planned for ' + K.fmtDate(d, { weekday: 'long' }) + '. Change it on This week.'); },
     finish: () => sheetFinish(),
-    finLeft: (el) => { ui.fin.left = +el.dataset.n; document.getElementById('finBody').outerHTML = finishBody(); },
-    finRate: (el) => { ui.fin.rate = +el.dataset.n; document.getElementById('finBody').outerHTML = finishBody(); },
+    finLeft: (el) => { ui.fin.left = +el.dataset.n; rerenderFinish(); },
+    finRate: (el) => { ui.fin.rate = +el.dataset.n; rerenderFinish(); },
+    finScale: (el) => { ui.fin.scale = +el.dataset.n; finPlan(); rerenderFinish(); },
+    finAll: (el) => { const row = ui.fin.rows[+el.dataset.i]; row.take = row.have; rerenderFinish(); },
+    finNone: (el) => { ui.fin.rows[+el.dataset.i].take = 0; rerenderFinish(); },
     finSave: () => {
       const r = S.recipes.find((x) => x.id === ui.recipeId);
-      const made = ui.people + ui.extra, scale = made / r.servings;
+      const scale = ui.fin.scale, made = r.servings * scale;
       const cost = K.recipeCost(r, made).total;
-      for (const g of r.ingredients) K.useUp(g, scale);
+      for (const row of ui.fin.rows) K.takeOut(row.key, Math.min(row.take || 0, row.have), row.unit);
       const left = ui.fin.left;
-      S.log.push({ id: K.uid(), date: K.today(), type: 'cooked', recipeId: r.id, servings: ui.people, leftovers: left, cost: K.round(cost) });
+      const ate = Math.max(1, Math.round(made - left));
+      S.log.push({ id: K.uid(), date: K.today(), type: 'cooked', recipeId: r.id, servings: ate, leftovers: left, cost: K.round(cost) });
       r.cooked = (r.cooked || []).concat(K.today());
-      r.yields = (r.yields || []).concat(K.round((ui.people + left) / scale, 1));
+      r.yields = (r.yields || []).concat(K.round((S.settings.household + left) / scale, 1));
       r.rating = ui.fin.rate;
       if (left > 0) S.items.push({ id: K.uid(), name: r.name + ' (leftovers)', key: 'leftover', qty: left, unit: 'serving', loc: 'fridge', expires: K.addDays(K.today(), 4), added: K.today(), leftoverOf: r.id });
       const tp = K.dayPlan(K.today());
-      if (!tp.dinner || tp.dinner.type !== 'recipe') tp.dinner = { type: 'recipe', recipeId: r.id, servings: ui.people, extra: ui.extra };
+      if (!tp.dinner || tp.dinner.type !== 'recipe') tp.dinner = { type: 'recipe', recipeId: r.id, scale };
       ui.timers = {};
+      const taken = ui.fin.rows.filter((row) => row.take > 0).length;
       save(); closeSheet(); setCookMode(false, true); go('tonight');
-      toast(left ? 'Saved. ' + left + ' serving' + (left > 1 ? 's' : '') + ' of leftovers went in the fridge.' : 'Saved. The kitchen is updated.');
+      toast('Saved. ' + (taken ? 'Took ' + taken + ' thing' + (taken > 1 ? 's' : '') + ' out of the kitchen' : 'Nothing taken out of the kitchen') + (left ? ', and ' + left + ' serving' + (left > 1 ? 's' : '') + ' of leftovers went in the fridge.' : '.'));
     },
 
     // costs
@@ -903,7 +1142,9 @@
     rcDate: (el) => { ui.receipt.date = el.value || K.today(); },
     rcText: (el) => { ui.receipt.text = el.value; },
     rcName: (el) => { const l = ui.receipt.lines[+el.dataset.i]; l.name = el.value; },
-    rcPrice: (el) => { const l = ui.receipt.lines[+el.dataset.i]; l.price = parseFloat(el.value) || 0; },
+    rcPrice: (el, ev) => { const l = ui.receipt.lines[+el.dataset.i]; l.price = parseFloat(el.value) || 0; l.check = false; if (ev && ev.type === 'change') rerenderReceipt(); },
+    rcTax: (el) => { ui.receipt.tax = parseFloat(el.value) || 0; rerenderReceipt(); },
+    finTake: (el) => { const row = ui.fin.rows[+el.dataset.i]; const v = parseFloat(el.value); row.take = isFinite(v) && v >= 0 ? v : 0; },
     rcPhoto: (el) => { const f = el.files && el.files[0]; if (f) ocrPhoto(f); },
     stores: (el) => { const list = el.value.split(',').map((s) => s.trim()).filter(Boolean); if (list.length) { S.settings.stores = list; save(); } },
     restore: (el) => {
@@ -934,7 +1175,7 @@
   });
   document.addEventListener('input', (ev) => {
     const el = ev.target.closest('[data-change]');
-    if (el && ['rq', 'pickSearch', 'rcText', 'rcName', 'rcPrice', 'itName'].includes(el.dataset.change)) CH[el.dataset.change](el, ev);
+    if (el && ['rq', 'pickSearch', 'rcText', 'rcName', 'rcPrice', 'itName', 'finTake'].includes(el.dataset.change)) CH[el.dataset.change](el, ev);
   });
   document.addEventListener('submit', (ev) => {
     const f = ev.target.closest('[data-form]');
@@ -959,6 +1200,8 @@
     else if (!S.sample && !S.receipts.length && !S.items.length && K.loadSeedReceipts) { K.useState(S); K.loadSeedReceipts(S); K.saveState(S); }
     if (!S.sample && K.addNewFamilyRecipes && K.addNewFamilyRecipes(S)) K.saveState(S);
     if (!S.sample && K.applyStorePrices && K.applyStorePrices(S)) K.saveState(S);
+    K.useState(S);
+    if (K.upgradeCatalog(S)) { K.reindex(); K.saveState(S); }
     S.settings = Object.assign({ household: 3, theme: 'system', stores: K.DEFAULT_STORES.slice() }, S.settings || {});
     K.useState(S);
     ui.people = S.settings.household;
