@@ -97,7 +97,8 @@
     if (n <= 3) return { t: verb + ' within ' + n + ' days', c: 'warn' };
     return { t: 'Good for ' + (n > 60 ? Math.round(n / 30) + ' months' : n + ' days'), c: 'ok' };
   };
-  const tile = (r, badges) => '<div class="ph c-' + esc((r.cuisine || 'other').toLowerCase().replace(/[^a-z]/g, '')) + '">' +
+  const tile = (r, badges) => '<div class="ph c-' + esc((r.cuisine || 'other').toLowerCase().replace(/[^a-z]/g, '')) + (r.photo ? ' has-photo' : '') + '">' +
+    (r.photo ? '<img class="ph-img" src="' + esc(r.photo) + '" alt="" loading="lazy" decoding="async">' : '') +
     (badges ? '<div class="badges">' + badges + '</div>' : '') + '<span class="cu">' + esc(r.cuisine || 'Other') + '</span></div>';
   const tagHtml = (r) => K.recipeTags(r).map((t) => '<span class="tag ' + esc(t) + '">' + esc(K.cap(t)) + '</span>').join(' ');
   const costLine = (r, people) => {
@@ -261,6 +262,7 @@
     const ly = K.learnedYield(r);
     const since = K.daysSinceCooked(r);
     let html = '<button class="btn ghost small" data-act="tab" data-id="recipes">' + icon('back') + ' Recipes</button>';
+    html += recipePhotoHtml(r);
     html += '<div class="rp-head" style="margin-top:10px"><div style="min-width:0"><h1>' + esc(r.name) + '</h1><div class="sub">' + esc(r.cuisine || 'Other') + (r.time ? ' · ' + r.time + ' min' : '') + ' · recipe serves ' + r.servings +
       (ly && Math.abs(ly - r.servings) >= 0.5 ? ' · <b>makes about ' + ly + ' for you</b>' : '') + (since != null ? ' · last made ' + (since === 0 ? 'today' : since + ' days ago') : '') + '</div>' +
       '<div class="row" style="margin-top:6px">' + tagHtml(r) + (r.source ? ' <a class="small" href="' + esc(r.source) + '" target="_blank" rel="noopener">View original</a>' : '') + '</div></div>' +
@@ -282,6 +284,48 @@
     html += '<div class="section row"><button class="btn" data-act="finish">' + icon('check') + ' We made this</button><button class="btn ghost" data-act="planIt">Plan it</button><button class="btn ghost" data-act="editRecipe">Edit</button>' +
       '<button class="btn danger" data-act="delRecipe">' + (ui.confirm === 'del-' + r.id ? 'Tap again to delete' : 'Delete') + '</button></div>';
     return html;
+  }
+
+  // ---------- Recipe photos ----------
+  // Picked from the camera or photo library, shrunk and saved with the recipe on this device.
+  function recipePhotoHtml(r) {
+    const input = '<input type="file" id="recipePhotoFile" accept="image/*" data-change="recipePhoto" hidden>';
+    if (!r.photo) return '<label class="rp-addphoto" for="recipePhotoFile">' + icon('camera') + '<span>Add a photo</span>' + input + '</label>';
+    return '<div class="rp-photo"><img src="' + esc(r.photo) + '" alt="' + esc(r.name) + '"><div class="rp-photo-acts">' +
+      '<label class="btn small" for="recipePhotoFile">' + icon('camera') + ' Change photo' + input + '</label>' +
+      '<button class="btn small ghost" data-act="removePhoto">' + (ui.confirm === 'photo-' + r.id ? 'Tap again to remove' : 'Remove') + '</button></div></div>';
+  }
+  const loadImage = async (file) => {
+    if (window.createImageBitmap) { try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (e) { /* fall back to <img> */ } }
+    const url = URL.createObjectURL(file);
+    try {
+      return await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => rej(new Error('bad image')); im.src = url; });
+    } finally { setTimeout(() => URL.revokeObjectURL(url), 1000); }
+  };
+  // Long side at most 1200px as a JPEG, stepping quality down until it is about 300 KB or less.
+  K.shrinkPhoto = async (file, max = 1200, target = 300000) => {
+    const img = await loadImage(file);
+    const w0 = img.width || img.naturalWidth, h0 = img.height || img.naturalHeight;
+    const k = Math.min(1, max / Math.max(w0, h0));
+    const c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(w0 * k)); c.height = Math.max(1, Math.round(h0 * k));
+    const g = c.getContext('2d');
+    g.imageSmoothingQuality = 'high';
+    g.drawImage(img, 0, 0, c.width, c.height);
+    if (img.close) img.close();
+    let q = 0.82, out = c.toDataURL('image/jpeg', q);
+    while (out.length * 0.75 > target && q > 0.45) { q -= 0.1; out = c.toDataURL('image/jpeg', q); }
+    return out;
+  };
+  async function setRecipePhoto(file) {
+    const r = S.recipes.find((x) => x.id === ui.recipeId);
+    if (!r || !file) return;
+    if (file.type && !/^image\//.test(file.type)) { toast('That file isn\'t a picture'); return; }
+    toast('Adding the photo…');
+    try {
+      r.photo = await K.shrinkPhoto(file);
+      save(); render(); toast('Photo saved');
+    } catch (e) { toast('That picture couldn\'t be opened. Try a different one.'); }
   }
 
   // ---------- Costs ----------
@@ -1077,6 +1121,12 @@
       else { r = { id: K.uid(), rating: 0, yields: [], cooked: [], created: K.today(), ...fields }; S.recipes.push(r); }
       save(); closeSheet(); ui.recipeId = null; go('recipe-' + r.id); toast('Recipe saved');
     },
+    removePhoto: () => {
+      const r = S.recipes.find((x) => x.id === ui.recipeId);
+      if (!r) return;
+      if (ui.confirm !== 'photo-' + r.id) { ui.confirm = 'photo-' + r.id; render(); return; }
+      r.photo = ''; ui.confirm = null; save(); render(); toast('Photo removed');
+    },
     delRecipe: () => {
       if (ui.confirm !== 'del-' + ui.recipeId) { ui.confirm = 'del-' + ui.recipeId; render(); return; }
       S.recipes = S.recipes.filter((r) => r.id !== ui.recipeId);
@@ -1145,6 +1195,7 @@
     rcPrice: (el, ev) => { const l = ui.receipt.lines[+el.dataset.i]; l.price = parseFloat(el.value) || 0; l.check = false; if (ev && ev.type === 'change') rerenderReceipt(); },
     rcTax: (el) => { ui.receipt.tax = parseFloat(el.value) || 0; rerenderReceipt(); },
     finTake: (el) => { const row = ui.fin.rows[+el.dataset.i]; const v = parseFloat(el.value); row.take = isFinite(v) && v >= 0 ? v : 0; },
+    recipePhoto: (el) => { const f = el.files && el.files[0]; el.value = ''; if (f) setRecipePhoto(f); },
     rcPhoto: (el) => { const f = el.files && el.files[0]; if (f) ocrPhoto(f); },
     stores: (el) => { const list = el.value.split(',').map((s) => s.trim()).filter(Boolean); if (list.length) { S.settings.stores = list; save(); } },
     restore: (el) => {
@@ -1166,7 +1217,7 @@
     const f = A[el.dataset.act];
     if (!f) return;
     if (el.tagName !== 'INPUT') ev.preventDefault();
-    if (ui.confirm && !['delRecipe', 'eraseAll', 'loadSample'].includes(el.dataset.act)) { ui.confirm = null; }
+    if (ui.confirm && !['delRecipe', 'removePhoto', 'eraseAll', 'loadSample'].includes(el.dataset.act)) { ui.confirm = null; }
     f(el, ev);
   });
   document.addEventListener('change', (ev) => {

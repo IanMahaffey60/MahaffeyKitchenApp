@@ -11,6 +11,7 @@ A web app for the household iPad (and iPhone): recipes, the week plan, the groce
 - `js/model.js`: costs, matching ingredients to the kitchen, suggestions, the grocery list, learning
 - `js/app.js`: the screens and buttons
 - `manifest.webmanifest`, `sw.js`, `icons/`: Home Screen install and offline use
+- `photos/`: pictures for the starting recipes (named in the last column of a recipe's `===` line in `seed/family-recipes.txt`)
 - `seed/`: the plain-text sources for `js/seed.js`. Edit `family-recipes.txt`, `first-receipt.txt` or `store-prices.txt`, then run `node seed/build-seed.js` to regenerate it
 
 ## Where data lives
@@ -28,6 +29,7 @@ Double-clicking `index.html` won't save data reliably. Run a tiny local server f
 ## Notes
 - Recipe links: the app first asks the site itself, then (if Settings allows) free public reader services (AllOrigins, CodeTabs, Jina Reader) that fetch the page. Only the link is sent. It reads the recipe data that sites publish for search engines. When a site won't share, the "Copy for Kitchen" Safari bookmark (set up from Add a recipe) copies the recipe on the page itself, and the paste box reads it.
 - Receipt photos are read on the device with Tesseract.js, which downloads the first time it's used. Before reading, the app crops to the receipt and cleans up shadows; afterwards it matches codes the store has used before (even when a letter was misread), fixes prices that differ from last time by one commonly misread digit, flags prices that look off, and compares the lines with the receipt's printed total. Typing or pasting receipt lines always works.
+- Recipe photos: on a recipe page, tap Add a photo (or Change photo) to take a picture or pick one from the photo library. The app shrinks it to about 1200 pixels and 300 KB and saves it with the recipe on that device, so it is also in backups. Photos added on one device don't appear on another.
 - Recipes open as written. "Making" on a recipe (or Half / Double when planning a dinner) scales the amounts, the grocery list and what "We made this" takes out of the kitchen. The household size is only used for per-person costs and guessing leftovers.
 - "We made this" assumes the whole recipe was made (or what the page was changed to), and shows what will be taken out of the Kitchen list so amounts can be corrected before saving.
 - Cook mode keeps the screen on using the Screen Wake Lock API (iPadOS 16.4 and later; works best when opened from the Home Screen icon).

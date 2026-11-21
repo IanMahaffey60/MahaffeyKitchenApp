@@ -1,5 +1,5 @@
 # Family recipe binder, transcribed from photos (Photos-1-001.zip). Format:
-# === Name | Cuisine | Serves | Minutes | tags (comma) | photo numbers
+# === Name | Cuisine | Serves | Minutes | tags (comma) | photo numbers | picture file (optional, in photos/)
 # ingredient lines
 # ---
 # step lines
@@ -796,3 +796,29 @@ From The Cozy Cook (Stephanie): https://thecozycook.com/wprm_print/homemade-rame
 Any instant ramen works (Maruchan or Top Ramen). Keep the broth and soy sauce low sodium because the noodles add salt; if you only have regular broth, swap 1 to 2 cups of it for water.
 Cremini mushrooms are best, but white button work, or leave them out. Sauvignon Blanc is the best wine, then Chardonnay or Pinot Grigio; chicken broth works instead.
 Kale or spinach can stand in for bok choy. Keeps 3 days in the fridge or 3 months frozen.
+
+=== Kai's Favorite Sesame-Orange Chicken | Chinese | 4 | 30 | fast | book | photos/sesame-orange-chicken.jpg
+1 1/2 lb boneless skinless chicken breast, cut into bite-size pieces
+4 tbsp low sodium soy sauce, divided
+1/4 cup all-purpose flour
+1 tbsp fresh ginger, peeled and grated (a 1 inch piece)
+2 cloves garlic, grated
+1/2 orange, zested and juiced
+2 tbsp hoisin sauce
+2 tbsp rice vinegar
+1 tsp crushed red pepper flakes (1 to 2 tsp)
+1 tbsp toasted sesame oil
+2 tbsp extra-virgin olive oil
+2 green onions, chopped, plus more for serving
+1 1/2 cups rice (white or brown), steamed, for serving
+2 tbsp toasted sesame seeds, for serving
+---
+In a medium bowl, combine the chicken, 2 tbsp of the soy sauce and the flour. Toss until the flour evenly coats the chicken.
+In a small bowl or glass measuring cup, whisk together the remaining 2 tbsp soy sauce, the ginger, garlic, orange zest, orange juice, hoisin sauce, vinegar, red pepper flakes and toasted sesame oil.
+Heat the olive oil in a large skillet over medium-high heat. When the oil shimmers, add the chicken in an even layer and cook, stirring, until browned all over, about 5 minutes.
+Pour in the sauce and bring to a boil, then reduce the heat to medium-low and simmer, stirring occasionally, until the sauce thickens and the chicken is coated, 5 to 10 minutes. Take the skillet off the heat and stir in the green onions.
+Serve the chicken over rice and top with more green onions and toasted sesame seeds.
+---
+From Half Baked Harvest Super Simple, page 192. Prep 15 minutes, cook 15 minutes.
+Also good with frozen shrimp, or a head of cauliflower broken into florets for a vegetarian version.
+The book doesn't give an amount of rice, so 1 1/2 cups uncooked is a guess for 4.
