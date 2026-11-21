@@ -1,5 +1,5 @@
 // Turns seed/family-recipes.txt into js/seed.js. Run from the kitchen-app folder: node seed/build-seed.js
-// Recipe format: "=== Name | Cuisine | Serves | Minutes | tags, comma separated | photo numbers",
+// Recipe format: "=== Name | Cuisine | Serves | Minutes | tags, comma separated | binder photo numbers | picture file (optional)",
 // then ingredient lines, a "---" line, step lines, a "---" line, and notes.
 const fs = require('fs');
 const path = require('path');
@@ -7,12 +7,12 @@ const root = path.join(__dirname, '..');
 const txt = fs.readFileSync(path.join(__dirname, 'family-recipes.txt'), 'utf8');
 const recipes = txt.split(/^=== /m).slice(1).map((b) => {
   const lines = b.split('\n');
-  const [name, cuisine, serves, mins, tags] = lines[0].split('|').map((s) => s.trim());
+  const [name, cuisine, serves, mins, tags, , photo] = lines[0].split('|').map((s) => s.trim());
   const parts = lines.slice(1).join('\n').split(/^---\s*$/m).map((p) => p.split('\n').map((l) => l.trim()).filter(Boolean));
   return {
     name, cuisine: cuisine || 'Other', servings: +serves || 4, time: +mins || null,
     tags: tags ? tags.split(',').map((t) => t.trim()).filter(Boolean) : [],
-    ingredients: parts[0] || [], steps: parts[1] || [], notes: (parts[2] || []).join('\n'),
+    ingredients: parts[0] || [], steps: parts[1] || [], notes: (parts[2] || []).join('\n'), photo: photo || '',
   };
 });
 // Receipts: "=== date | store | tax", then "CODE | price | catalog item | amount unit | not for meals"
@@ -48,7 +48,7 @@ const js = `/* The family recipe binder: the starting recipes on a new device. G
   K.FAMILY_RECIPES = ${JSON.stringify(recipes, null, 1)};
   K.familyRecipes = () => K.FAMILY_RECIPES.map((r) => ({
     id: K.uid(), name: r.name, cuisine: r.cuisine, servings: r.servings, time: r.time, tags: r.tags.slice(), source: (r.notes.match(/https?:\\/\\/\\S+/) || [''])[0], notes: r.notes,
-    ingredients: r.ingredients.map(K.parseIngredient), steps: r.steps.slice(), rating: 0, yields: [], cooked: [], created: K.today(),
+    ingredients: r.ingredients.map(K.parseIngredient), steps: r.steps.slice(), rating: 0, yields: [], cooked: [], created: K.today(), photo: r.photo || '',
   }));
   K.FIRST_RECEIPTS = ${JSON.stringify(receipts, null, 1)};
   // Load a receipt the way "Add to the kitchen" does: prices, what's now in the kitchen, and the store's shorthand codes.

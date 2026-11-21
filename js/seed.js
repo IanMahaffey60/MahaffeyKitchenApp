@@ -27,7 +27,8 @@
    "While the steak grills, deglaze the pan and add a little butter, then the cracked black pepper, green peppercorns, heavy cream and whiskey. Cook over medium heat until reduced by half.",
    "Put the steak on a serving dish and pour the sauce over it, or serve the sauce on the side. Makes about 1/4 cup of sauce, so double it if you want more."
   ],
-  "notes": "From Mum. Best served with fava beans and a nice Chianti."
+  "notes": "From Mum. Best served with fava beans and a nice Chianti.",
+  "photo": ""
  },
  {
   "name": "Steak Teriyaki",
@@ -49,7 +50,8 @@
    "Soak the meat in the marinade overnight.",
    "Drain off the marinade and barbecue."
   ],
-  "notes": "From the kitchen of Carla Parsons. The card doesn't give an amount of meat, so 1.5 lb is a guess."
+  "notes": "From the kitchen of Carla Parsons. The card doesn't give an amount of meat, so 1.5 lb is a guess.",
+  "photo": ""
  },
  {
   "name": "Potato Dumplings with Pork Roast and Sauerkraut",
@@ -82,7 +84,8 @@
    "Sauerkraut: empty the jar into a pan and heat over medium until it begins to boil.",
    "Make the gravy (1 packet makes 1 cup) and serve it over the dumplings."
   ],
-  "notes": "Passed from mother to daughter for decades in the Gallagher and Mahaffey families. Gravy is a must for the dumplings. Enjoy, Poppy."
+  "notes": "Passed from mother to daughter for decades in the Gallagher and Mahaffey families. Gravy is a must for the dumplings. Enjoy, Poppy.",
+  "photo": ""
  },
  {
   "name": "Cowboy Casserole",
@@ -105,7 +108,8 @@
    "Pour into a 2 1/2 quart casserole, put the biscuit dough on top and sprinkle with cheese.",
    "Bake uncovered at 375°F for 25 minutes."
   ],
-  "notes": "From the kitchen of Holly Schelling (Momma). Also good with an added can of corn."
+  "notes": "From the kitchen of Holly Schelling (Momma). Also good with an added can of corn.",
+  "photo": ""
  },
  {
   "name": "Dank Curry",
@@ -146,7 +150,8 @@
    "Add the bell peppers, the cornstarch if it's too thin, and the spinach. Simmer 5 more minutes.",
    "Scoop rice into bowls, pour the curry over and garnish with cilantro and lime."
   ],
-  "notes": "The card says 1/2 to 1 cup lentils and \"a full bulb\" of garlic if you're feeling it."
+  "notes": "The card says 1/2 to 1 cup lentils and \"a full bulb\" of garlic if you're feeling it.",
+  "photo": ""
  },
  {
   "name": "Margarita Chicken",
@@ -169,7 +174,8 @@
    "Cover with the tomatoes and sprinkle with cheese.",
    "Bake at 350°F for 30 minutes."
   ],
-  "notes": "From the kitchen of Granny. Good served on wild rice with a green salad."
+  "notes": "From the kitchen of Granny. Good served on wild rice with a green salad.",
+  "photo": ""
  },
  {
   "name": "Porcupine Meatballs",
@@ -193,7 +199,8 @@
    "Drain the fat from the meatballs and add the broth. Cover and simmer 30 minutes.",
    "Take out the meatballs and thicken the gravy with flour and water. Serve over rice or noodles."
   ],
-  "notes": "From the kitchen of Carla Parsons."
+  "notes": "From the kitchen of Carla Parsons.",
+  "photo": ""
  },
  {
   "name": "Tex-Mex Enchiladas con Chili con Carne",
@@ -233,7 +240,8 @@
    "Pour the rest of the sauce over, sprinkle with the remaining cheese and onion.",
    "Bake at 350°F until hot and the cheese is melted, about 20 to 30 minutes. Serve with the chili con carne ladled on top."
   ],
-  "notes": "From the kitchen of the Blount family, originally from the \"Texas the Beautiful Cookbook\". Buy a hunk of American cheese from the deli and grate it; this makes very creamy enchiladas."
+  "notes": "From the kitchen of the Blount family, originally from the \"Texas the Beautiful Cookbook\". Buy a hunk of American cheese from the deli and grate it; this makes very creamy enchiladas.",
+  "photo": ""
  },
  {
   "name": "Dutch Oven Chuck Stew",
@@ -267,7 +275,8 @@
    "Cook with the lid on about 1 to 1 1/2 hours, until the meat is tender and the vegetables are soft. Stir now and then, adding more beer if it isn't covering the stew.",
    "At the end, thicken with flour mixed with water if needed."
   ],
-  "notes": "From the outdoor ventures of Poppy. Makes enough for 4. Good with Pillsbury Grands biscuits baked in a second Dutch oven stacked on top. Campfire note: one Kingsford briquette is about 10 degrees; put about 1/4 of the coals on the bottom and 3/4 on top, and turn the oven a quarter turn every 10 minutes."
+  "notes": "From the outdoor ventures of Poppy. Makes enough for 4. Good with Pillsbury Grands biscuits baked in a second Dutch oven stacked on top. Campfire note: one Kingsford briquette is about 10 degrees; put about 1/4 of the coals on the bottom and 3/4 on top, and turn the oven a quarter turn every 10 minutes.",
+  "photo": ""
  },
  {
   "name": "Chicken with Mustard Mascarpone Marsala Sauce",
@@ -296,7 +305,8 @@
    "Add the chicken or turkey and simmer a few minutes until warmed through.",
    "Stir in the parsley and serve."
   ],
-  "notes": "From the Bouchers: super easy and oh so delicious. Luca loves this one over jasmine rice. A good way to use leftover chicken."
+  "notes": "From the Bouchers: super easy and oh so delicious. Luca loves this one over jasmine rice. A good way to use leftover chicken.",
+  "photo": ""
  },
  {
   "name": "Drunken Chicken",
@@ -324,7 +334,8 @@
    "In the same skillet, cook the onion until transparent. Add the parsley, tomatoes with liquid, cinnamon, cloves, brown sugar, sherry and raisins. Simmer uncovered 15 minutes, stirring now and then.",
    "Pour the sauce over the chicken, sprinkle with almonds and bake at 375°F for 30 minutes."
   ],
-  "notes": "From the kitchen of Holly Schelling (Momma). Serve over rice with Sauvignon Blanc."
+  "notes": "From the kitchen of Holly Schelling (Momma). Serve over rice with Sauvignon Blanc.",
+  "photo": ""
  },
  {
   "name": "Noodle Stroganoff",
@@ -348,7 +359,8 @@
    "Butter 1 large or 2 medium baking dishes. Layer noodles, then cheese mixture, then meat sauce, repeating until everything is used. End with meat sauce on top.",
    "Bake at 350°F for 30 minutes, until hot through and bubbly."
   ],
-  "notes": "From the kitchen of Norma Culberson via Paula Jo. Serves 10. Shawn calls this the \"Yellow Bowl\" dish. Plan to do dishes for hours, but so worth it."
+  "notes": "From the kitchen of Norma Culberson via Paula Jo. Serves 10. Shawn calls this the \"Yellow Bowl\" dish. Plan to do dishes for hours, but so worth it.",
+  "photo": ""
  },
  {
   "name": "Stuffed Cabbage Rolls",
@@ -380,7 +392,8 @@
    "Put 2 tbsp of meat mixture at the base of each cabbage leaf and roll up. Arrange on the sauerkraut.",
    "Top with the remaining sauce, cover with the outer leaves, and bake at 350°F for 1 hour."
   ],
-  "notes": "From the kitchen of Holly Schelling (Momma). Serve over rice with sour cream. If the rolls brown too much, tent with foil."
+  "notes": "From the kitchen of Holly Schelling (Momma). Serve over rice with sour cream. If the rolls brown too much, tent with foil.",
+  "photo": ""
  },
  {
   "name": "Chicken Enchilada Bake",
@@ -410,7 +423,8 @@
    "Spread the remaining cheese and top with olives.",
    "Bake uncovered at 350°F for 25 to 35 minutes."
   ],
-  "notes": "From Milli: \"I can't pretend it's healthy, but I hope you enjoy it anyway.\" Milli prefers hot jalapeños for the chiles."
+  "notes": "From Milli: \"I can't pretend it's healthy, but I hope you enjoy it anyway.\" Milli prefers hot jalapeños for the chiles.",
+  "photo": ""
  },
  {
   "name": "Costco Chicken Satay",
@@ -443,7 +457,8 @@
    "Heat the grill to high. Thread the chicken on skewers, grease the grill, and cook 10 minutes, turning once.",
    "Sauce: whisk the coconut milk, peanut butter, brown sugar, soy sauce, curry paste and lime juice in a medium pan. Bring to a simmer and cook on medium heat 3 minutes."
   ],
-  "notes": "From the kitchen of Auntie Pattie. The card says 2 1/2 to 3 lb chicken breast."
+  "notes": "From the kitchen of Auntie Pattie. The card says 2 1/2 to 3 lb chicken breast.",
+  "photo": ""
  },
  {
   "name": "Roasted Salmon with Kale and Cabbage",
@@ -471,7 +486,8 @@
    "Toss, season the salmon and add it to the sheet. Bake until the salmon is cooked through, about 10 minutes. Spoon a little of the lemon sauce on about 7 minutes in.",
    "Drizzle the salmon and vegetables with the dressing before serving. Good over rice."
   ],
-  "notes": "From the kitchen of Milli Mahaffey. Purple cabbage works too. \"Very flavorful and it will keep you super strong.\""
+  "notes": "From the kitchen of Milli Mahaffey. Purple cabbage works too. \"Very flavorful and it will keep you super strong.\"",
+  "photo": ""
  },
  {
   "name": "Quiche",
@@ -495,7 +511,8 @@
    "Pour into the ready-made pie crust.",
    "Bake at 350°F for 40 to 45 minutes, until set and a knife comes out clean."
   ],
-  "notes": "From the kitchen of Karen Barrett. Mike approved. Quick, easy and yummy. Works for breakfast or lunch too."
+  "notes": "From the kitchen of Karen Barrett. Mike approved. Quick, easy and yummy. Works for breakfast or lunch too.",
+  "photo": ""
  },
  {
   "name": "Billy's Kindergarten Quiche",
@@ -519,7 +536,8 @@
    "Bake at 325°F for 40 minutes.",
    "Let it set for 15 minutes before cutting."
   ],
-  "notes": "From the kitchen of Terri Culberson (Auntie). Billy made this in kindergarten for Mother's Day."
+  "notes": "From the kitchen of Terri Culberson (Auntie). Billy made this in kindergarten for Mother's Day.",
+  "photo": ""
  },
  {
   "name": "Black Bean and Sweet Potato Tacos",
@@ -552,7 +570,8 @@
    "Rinse the beans and add them to the pan.",
    "Serve in warm corn tortillas with cheese, hot sauce, sour cream and avocado."
   ],
-  "notes": "From the kitchen of Karen Barrett. Easy, warm and delicious. Mike approves. The card says 1 or 2 yams and doesn't give spice amounts."
+  "notes": "From the kitchen of Karen Barrett. Easy, warm and delicious. Mike approves. The card says 1 or 2 yams and doesn't give spice amounts.",
+  "photo": ""
  },
  {
   "name": "THICK Sandwiches",
@@ -588,7 +607,8 @@
    "Close the sandwich and hold it down as you cut it in half. You must cut it in half.",
    "Dip into the olive oil and balsamic as you eat."
   ],
-  "notes": "Napkins required, because it's about to be a THICK mess. A good lunch."
+  "notes": "Napkins required, because it's about to be a THICK mess. A good lunch.",
+  "photo": ""
  },
  {
   "name": "Sandy's Red Chicken",
@@ -611,7 +631,8 @@
    "Cook on the barbecue grill for the best taste.",
    "Serve with salad and rice, or chop it up for tacos."
   ],
-  "notes": "Sandy was Gregg's stepmom, who loved to cook for friends and family. The page says \"1/4 oil\" and \"1/4 water\", so 1/4 cup is assumed. This is a big batch; halve it for a normal dinner."
+  "notes": "Sandy was Gregg's stepmom, who loved to cook for friends and family. The page says \"1/4 oil\" and \"1/4 water\", so 1/4 cup is assumed. This is a big batch; halve it for a normal dinner.",
+  "photo": ""
  },
  {
   "name": "Simple Lasagna",
@@ -638,7 +659,8 @@
    "Top with the remaining mozzarella.",
    "Cover with foil and bake 25 minutes, then uncover and bake another 15 minutes."
   ],
-  "notes": "From the kitchen of Chelsea and Branden Pea. Based on the Barilla oven-ready box recipe, made without ricotta."
+  "notes": "From the kitchen of Chelsea and Branden Pea. Based on the Barilla oven-ready box recipe, made without ricotta.",
+  "photo": ""
  },
  {
   "name": "Peppercorn Steak with Herbed Blue Cheese",
@@ -661,7 +683,8 @@
    "Heat a cast iron skillet over moderately high heat. Sear the steaks in the dry pan, 1 to 2 minutes per side.",
    "Top each steak with the blue cheese mixture and roast in the oven until done the way you like."
   ],
-  "notes": "From the kitchen of Russ and Käthe Reuter. Their go-to sides are roasted red potatoes or asparagus."
+  "notes": "From the kitchen of Russ and Käthe Reuter. Their go-to sides are roasted red potatoes or asparagus.",
+  "photo": ""
  },
  {
   "name": "Tangy Meatloaf",
@@ -695,7 +718,8 @@
    "Bake the loaf about 30 minutes, add the sauce, and bake another 30 minutes until cooked through.",
    "Let stand 5 minutes before serving."
   ],
-  "notes": "From the kitchen of Milli. Simple, good comfort food. The leftovers make great sandwiches. The card says \"1 1/2 ground beef\", so 1.5 lb is assumed."
+  "notes": "From the kitchen of Milli. Simple, good comfort food. The leftovers make great sandwiches. The card says \"1 1/2 ground beef\", so 1.5 lb is assumed.",
+  "photo": ""
  },
  {
   "name": "Shawn's Chicken Soft Tacos",
@@ -728,7 +752,8 @@
    "Add the tomatillo sauce and finish cooking until cooked through.",
    "Serve on heated tortillas with refried beans, Mexican cheese and your favorite toppings."
   ],
-  "notes": "Great with a Modelo and a few episodes of \"Better Call Saul.\" If you make Shawn's Tomatillo Salsa Verde, use it instead of the canned salsa, chipotle, ancho and paprika."
+  "notes": "Great with a Modelo and a few episodes of \"Better Call Saul.\" If you make Shawn's Tomatillo Salsa Verde, use it instead of the canned salsa, chipotle, ancho and paprika.",
+  "photo": ""
  },
  {
   "name": "Shawn's Tomatillo Salsa Verde",
@@ -749,7 +774,8 @@
    "Sauté all the ingredients until soft.",
    "Blend."
   ],
-  "notes": "Goes with Shawn's Chicken Soft Tacos. Not a dinner on its own."
+  "notes": "Goes with Shawn's Chicken Soft Tacos. Not a dinner on its own.",
+  "photo": ""
  },
  {
   "name": "Cream Enchiladas",
@@ -773,7 +799,8 @@
    "Pour a little sauce over to cover and sprinkle with cheddar. Keep layering until the sauce and cheese are gone, ending with cheese.",
    "Bake at 350°F for 20 minutes and let stand 5 minutes."
   ],
-  "notes": "From the kitchen of Kristy's mom, Bonnie Martin (Brown). Lots of ways to make it your own; shredded chicken in each layer is a good addition."
+  "notes": "From the kitchen of Kristy's mom, Bonnie Martin (Brown). Lots of ways to make it your own; shredded chicken in each layer is a good addition.",
+  "photo": ""
  },
  {
   "name": "Overnight Asparagus Mushroom Strata",
@@ -805,7 +832,8 @@
    "The next day, heat the oven to 375°F. Let the dish stand 30 minutes out of the fridge and spread the remaining 1 cup cheese over it.",
    "Bake until a knife near the edge comes out clean, about 45 minutes. Let stand 5 to 10 minutes before cutting."
   ],
-  "notes": "From Peggy Nipp, by way of Diane. A favorite holiday brunch. Start the night before."
+  "notes": "From Peggy Nipp, by way of Diane. A favorite holiday brunch. Start the night before.",
+  "photo": ""
  },
  {
   "name": "Candied Salmon",
@@ -829,7 +857,8 @@
    "Sprinkle dill over the salmon and glaze.",
    "Bake about 20 minutes, until the inside reaches 140°F."
   ],
-  "notes": "From the kitchen of James Trueblood and Cheyenne Acevedo. Pairs well with grilled asparagus, sweet potato fries or a green salad. The card doesn't give a salmon amount, so 1.5 lb is a guess."
+  "notes": "From the kitchen of James Trueblood and Cheyenne Acevedo. Pairs well with grilled asparagus, sweet potato fries or a green salad. The card doesn't give a salmon amount, so 1.5 lb is a guess.",
+  "photo": ""
  },
  {
   "name": "Easy Jerk-Rubbed Pork Chops",
@@ -853,7 +882,8 @@
    "Grill on medium-high for 10 to 12 minutes, until brown outside and slightly pink inside.",
    "Garnish with lime wedges and cilantro and serve right away."
   ],
-  "notes": "From the kitchen of Milli and Shawn. Turn the seasoning up or down to taste. Tasty and simple. Love, Mum."
+  "notes": "From the kitchen of Milli and Shawn. Turn the seasoning up or down to taste. Tasty and simple. Love, Mum.",
+  "photo": ""
  },
  {
   "name": "Sweet and Sour Meatballs",
@@ -882,7 +912,8 @@
    "Combine the sauce ingredients and add to the cooked meatballs. Simmer 10 minutes.",
    "Serve over egg noodles or rice."
   ],
-  "notes": "From the kitchen of Dan and Kristy Brown via Karen Hicks. Costco's bags of frozen meatballs make this super quick."
+  "notes": "From the kitchen of Dan and Kristy Brown via Karen Hicks. Costco's bags of frozen meatballs make this super quick.",
+  "photo": ""
  },
  {
   "name": "Chicken and Rice Dinner",
@@ -904,7 +935,8 @@
    "Sprinkle the rest of the soup mix over the chicken and pour the milk over everything.",
    "Cover with foil and bake at 350°F for 2 hours, checking at 1 1/2 hours."
   ],
-  "notes": "From the kitchen of Norma Culberson via Paula Jo. Yummy!"
+  "notes": "From the kitchen of Norma Culberson via Paula Jo. Yummy!",
+  "photo": ""
  },
  {
   "name": "Norma's Smothered Pork Chops",
@@ -926,7 +958,8 @@
    "Pour the soup and water over the chops and cook until tender.",
    "For gravy, shake the flour with enough water in a jar to make a smooth slurry. Pour it over the chops and cook until thickened."
   ],
-  "notes": "From the kitchen of Norma Culberson via Paula Jo. Delicious!! Use up to 12 chops and 4 to 5 tbsp flour; time is an estimate."
+  "notes": "From the kitchen of Norma Culberson via Paula Jo. Delicious!! Use up to 12 chops and 4 to 5 tbsp flour; time is an estimate.",
+  "photo": ""
  },
  {
   "name": "Teriyaki Flank Steak",
@@ -950,7 +983,8 @@
    "Broil 4 to 10 minutes per side.",
    "Slice thinly on the diagonal, against the grain."
   ],
-  "notes": "From Dian Berner, Christy Boucher's step-grandmother. Use 1/2 tsp ground ginger if no fresh root. \"So good ya gotta try it!!!!! Love ya, Paula Jo.\" Time excludes marinating."
+  "notes": "From Dian Berner, Christy Boucher's step-grandmother. Use 1/2 tsp ground ginger if no fresh root. \"So good ya gotta try it!!!!! Love ya, Paula Jo.\" Time excludes marinating.",
+  "photo": ""
  },
  {
   "name": "Dinosaur Chicken Nuggets",
@@ -970,7 +1004,8 @@
    "Draw a picture with the ketchup.",
    "Repeat until full or the dinos are gone."
   ],
-  "notes": "From Benji and Ricky Gonzalez. Follow up with popsicles or ice cream bars."
+  "notes": "From Benji and Ricky Gonzalez. Follow up with popsicles or ice cream bars.",
+  "photo": ""
  },
  {
   "name": "Zuppa Toscana",
@@ -1000,7 +1035,8 @@
    "Reduce heat to medium, stir in the cream and cooked sausage, and heat through.",
    "Mix in the spinach just before serving."
   ],
-  "notes": "From the kitchen of Auntie Pattie. Sausage can be mild or spicy. Broth cans are 13.75 oz."
+  "notes": "From the kitchen of Auntie Pattie. Sausage can be mild or spicy. Broth cans are 13.75 oz.",
+  "photo": ""
  },
  {
   "name": "Shawn's Baja Style Fish Tacos",
@@ -1034,7 +1070,8 @@
    "Deep fry in vegetable oil in small batches, about 4 minutes.",
    "Serve in warm corn tortillas with cabbage, cilantro, red onion, avocado, lime and white sauce."
   ],
-  "notes": "Poppie started making Baja Tacos a long time ago. The cabbage makes it! White corn tortillas are good. Optional: hot sauce, jalapeños, pico de gallo, and a spicy sauce of 1/2 cup sour cream, 1/2 cup mayo, 1/4 cup chopped cilantro and 2 tbsp taco seasoning. The card gives no amounts for the fish, batter or toppings, so those are estimates for 4."
+  "notes": "Poppie started making Baja Tacos a long time ago. The cabbage makes it! White corn tortillas are good. Optional: hot sauce, jalapeños, pico de gallo, and a spicy sauce of 1/2 cup sour cream, 1/2 cup mayo, 1/4 cup chopped cilantro and 2 tbsp taco seasoning. The card gives no amounts for the fish, batter or toppings, so those are estimates for 4.",
+  "photo": ""
  },
  {
   "name": "Chicken Piccata",
@@ -1059,7 +1096,8 @@
    "Reduce heat and simmer uncovered for 12 to 15 minutes or until the chicken juices run clear.",
    "Drizzle with lemon juice."
   ],
-  "notes": "From the kitchen of Carla Parsons."
+  "notes": "From the kitchen of Carla Parsons.",
+  "photo": ""
  },
  {
   "name": "Homemade Ramen",
@@ -1105,12 +1143,47 @@
    "Bring the soup to a rapid boil, add the ramen and cook 1 minute. Reduce to a gentle simmer, add the bok choy, mushrooms and chicken, and simmer until the noodles are done, about 3 minutes.",
    "Serve topped with green onions, chopped peanuts and a soft boiled egg."
   ],
-  "notes": "From The Cozy Cook (Stephanie): https://thecozycook.com/wprm_print/homemade-ramen\nAny instant ramen works (Maruchan or Top Ramen). Keep the broth and soy sauce low sodium because the noodles add salt; if you only have regular broth, swap 1 to 2 cups of it for water.\nCremini mushrooms are best, but white button work, or leave them out. Sauvignon Blanc is the best wine, then Chardonnay or Pinot Grigio; chicken broth works instead.\nKale or spinach can stand in for bok choy. Keeps 3 days in the fridge or 3 months frozen."
+  "notes": "From The Cozy Cook (Stephanie): https://thecozycook.com/wprm_print/homemade-ramen\nAny instant ramen works (Maruchan or Top Ramen). Keep the broth and soy sauce low sodium because the noodles add salt; if you only have regular broth, swap 1 to 2 cups of it for water.\nCremini mushrooms are best, but white button work, or leave them out. Sauvignon Blanc is the best wine, then Chardonnay or Pinot Grigio; chicken broth works instead.\nKale or spinach can stand in for bok choy. Keeps 3 days in the fridge or 3 months frozen.",
+  "photo": ""
+ },
+ {
+  "name": "Kai's Favorite Sesame-Orange Chicken",
+  "cuisine": "Chinese",
+  "servings": 4,
+  "time": 30,
+  "tags": [
+   "fast"
+  ],
+  "ingredients": [
+   "1 1/2 lb boneless skinless chicken breast, cut into bite-size pieces",
+   "4 tbsp low sodium soy sauce, divided",
+   "1/4 cup all-purpose flour",
+   "1 tbsp fresh ginger, peeled and grated (a 1 inch piece)",
+   "2 cloves garlic, grated",
+   "1/2 orange, zested and juiced",
+   "2 tbsp hoisin sauce",
+   "2 tbsp rice vinegar",
+   "1 tsp crushed red pepper flakes (1 to 2 tsp)",
+   "1 tbsp toasted sesame oil",
+   "2 tbsp extra-virgin olive oil",
+   "2 green onions, chopped, plus more for serving",
+   "1 1/2 cups rice (white or brown), steamed, for serving",
+   "2 tbsp toasted sesame seeds, for serving"
+  ],
+  "steps": [
+   "In a medium bowl, combine the chicken, 2 tbsp of the soy sauce and the flour. Toss until the flour evenly coats the chicken.",
+   "In a small bowl or glass measuring cup, whisk together the remaining 2 tbsp soy sauce, the ginger, garlic, orange zest, orange juice, hoisin sauce, vinegar, red pepper flakes and toasted sesame oil.",
+   "Heat the olive oil in a large skillet over medium-high heat. When the oil shimmers, add the chicken in an even layer and cook, stirring, until browned all over, about 5 minutes.",
+   "Pour in the sauce and bring to a boil, then reduce the heat to medium-low and simmer, stirring occasionally, until the sauce thickens and the chicken is coated, 5 to 10 minutes. Take the skillet off the heat and stir in the green onions.",
+   "Serve the chicken over rice and top with more green onions and toasted sesame seeds."
+  ],
+  "notes": "From Half Baked Harvest Super Simple, page 192. Prep 15 minutes, cook 15 minutes.\nAlso good with frozen shrimp, or a head of cauliflower broken into florets for a vegetarian version.\nThe book doesn't give an amount of rice, so 1 1/2 cups uncooked is a guess for 4.",
+  "photo": "photos/sesame-orange-chicken.jpg"
  }
 ];
   K.familyRecipes = () => K.FAMILY_RECIPES.map((r) => ({
     id: K.uid(), name: r.name, cuisine: r.cuisine, servings: r.servings, time: r.time, tags: r.tags.slice(), source: (r.notes.match(/https?:\/\/\S+/) || [''])[0], notes: r.notes,
-    ingredients: r.ingredients.map(K.parseIngredient), steps: r.steps.slice(), rating: 0, yields: [], cooked: [], created: K.today(),
+    ingredients: r.ingredients.map(K.parseIngredient), steps: r.steps.slice(), rating: 0, yields: [], cooked: [], created: K.today(), photo: r.photo || '',
   }));
   K.FIRST_RECEIPTS = [
  {
